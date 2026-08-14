@@ -11,28 +11,29 @@ window.LICENSE_DATA = {
     { key: 'modification', label: '改変・加工', icon: '✎' },
     { key: 'project', label: '作品への組み込み', icon: '+' },
     { key: 'merchandise', label: 'グッズ・商品化', icon: '□' },
-    { key: 'redistribution', label: '素材の再配布', icon: '↗' }
+    { key: 'redistribution', label: '素材の再配布', icon: '↗' },
+    { key: 'ai', label: 'AI学習・生成AI利用', icon: 'AI' }
   ],
   presets: {
     creator: {
       name: 'クリエイター向け標準',
-      policies: { commercial:'ask', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny' },
-      credit:'required', restrictions:{ adult:false, political:false, ai:true, nft:true, harmful:true, impersonation:true }
+      policies: { commercial:'ask', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny', ai:'deny' },
+      credit:'required', restrictions:{ adult:false, political:false, nft:true, harmful:true, impersonation:true }
     },
     open: {
       name: '自由に使ってOK',
-      policies: { commercial:'allow', monetized:'allow', modification:'allow', project:'allow', merchandise:'allow', redistribution:'ask' },
-      credit:'recommended', restrictions:{ adult:false, political:false, ai:false, nft:false, harmful:true, impersonation:true }
+      policies: { commercial:'allow', monetized:'allow', modification:'allow', project:'allow', merchandise:'allow', redistribution:'ask', ai:'allow' },
+      credit:'recommended', restrictions:{ adult:false, political:false, nft:false, harmful:true, impersonation:true }
     },
     marketplace: {
       name: '素材販売向け',
-      policies: { commercial:'allow', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny' },
-      credit:'recommended', restrictions:{ adult:false, political:true, ai:true, nft:true, harmful:true, impersonation:true }
+      policies: { commercial:'allow', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny', ai:'deny' },
+      credit:'recommended', restrictions:{ adult:false, political:true, nft:true, harmful:true, impersonation:true }
     },
     strict: {
       name: '許可制・厳格',
-      policies: { commercial:'ask', monetized:'ask', modification:'ask', project:'ask', merchandise:'ask', redistribution:'deny' },
-      credit:'required', restrictions:{ adult:true, political:true, ai:true, nft:true, harmful:true, impersonation:true }
+      policies: { commercial:'ask', monetized:'ask', modification:'ask', project:'ask', merchandise:'ask', redistribution:'deny', ai:'deny' },
+      credit:'required', restrictions:{ adult:true, political:true, nft:true, harmful:true, impersonation:true }
     }
   },
   cc: {
@@ -54,9 +55,9 @@ window.LICENSE_DATA = {
   defaultState: {
     mode:'custom', title:'作品利用ガイド', creator:'Fugu0141', workName:'My Creative Work', workType:'illustration',
     updatedAt:'', contact:'', theme:'blue', accent:'#5b8def', customImage:'', preset:'creator',
-    policies:{ commercial:'ask', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny' },
+    policies:{ commercial:'ask', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny', ai:'deny' },
     credit:'required', creditText:'© 2026 Fugu0141 / My Creative Work',
-    restrictions:{ adult:false, political:false, ai:true, nft:true, harmful:true, impersonation:true },
+    restrictions:{ adult:false, political:false, nft:true, harmful:true, impersonation:true },
     notes:'作品のイメージを著しく損なう利用や、第三者に公式・公認であると誤認させる利用はできません。',
     ccLicense:'CC BY 4.0', softwareLicense:'MIT', softwareScope:''
   }
