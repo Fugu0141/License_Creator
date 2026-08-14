@@ -27,6 +27,100 @@ function editorialTheme(){
   };
 }
 
+// Japanese-aware line breaking. Intl.Segmenter keeps words and particles together
+// far better than character-by-character wrapping. When two lines are needed,
+// choose a balanced breakpoint so we do not end up with only a few characters
+// stranded on the final line.
+function textSegments(text){
+  const value=String(text ?? '');
+  try{
+    if(typeof Intl!=='undefined' && Intl.Segmenter){
+      return Array.from(new Intl.Segmenter('ja',{granularity:'word'}).segment(value),s=>s.segment);
+    }
+  }catch(err){ /* fall through */ }
+  return Array.from(value);
+}
+
+function balancedTextLines(ctx,text,maxWidth,maxLines=2){
+  const value=String(text ?? '').replace(/\s+/g,' ').trim();
+  if(!value) return [];
+  if(ctx.measureText(value).width<=maxWidth) return [value];
+
+  const segments=textSegments(value);
+  const badStart=/^[、。，．,.!！?？:：;；)）\]】」』]/;
+  const badEnd=/[（(\[【「『]$/;
+
+  if(maxLines===2 && segments.length>1){
+    let best=null;
+    for(let i=1;i<segments.length;i++){
+      const left=segments.slice(0,i).join('').trim();
+      const right=segments.slice(i).join('').trim();
+      if(!left || !right || badStart.test(right) || badEnd.test(left)) continue;
+      const lw=ctx.measureText(left).width;
+      const rw=ctx.measureText(right).width;
+      if(lw>maxWidth || rw>maxWidth) continue;
+      const balance=Math.abs(lw-rw);
+      const orphanPenalty=rw<maxWidth*.24 ? maxWidth : 0;
+      const score=balance+orphanPenalty;
+      if(!best || score<best.score) best={score,lines:[left,right]};
+    }
+    if(best) return best.lines;
+  }
+
+  const lines=[];
+  let line='';
+  for(const segment of segments){
+    const candidate=(line+segment).trimStart();
+    if(!line || ctx.measureText(candidate).width<=maxWidth){
+      line=candidate;
+      continue;
+    }
+    lines.push(line.trim());
+    line=segment.trimStart();
+    if(lines.length===maxLines-1) break;
+  }
+  if(lines.length<maxLines && line.trim()){
+    const consumed=lines.join('');
+    const remainder=value.slice(consumed.length).trim() || line.trim();
+    lines.push(remainder);
+  }
+  return lines.slice(0,maxLines);
+}
+
+function drawBalancedText(ctx,text,x,y,maxWidth,lineHeight,maxLines=2){
+  const lines=balancedTextLines(ctx,text,maxWidth,maxLines);
+  lines.forEach((line,i)=>ctx.fillText(line,x,y+i*lineHeight));
+  return lines.length;
+}
+
+function drawAdaptiveSentence(ctx,text,x,y,maxWidth){
+  // Prefer one clean line when only a small reduction is necessary.
+  for(let size=20;size>=17;size-=.5){
+    ctx.font=weight(500,size);
+    if(ctx.measureText(text).width<=maxWidth){
+      ctx.fillText(text,x,y);
+      return 1;
+    }
+  }
+
+  ctx.font=weight(500,19);
+  return drawBalancedText(ctx,text,x,y,maxWidth,30,2);
+}
+
+function drawCenteredPolicyLabel(ctx,text,x,centerY,maxWidth){
+  ctx.font=weight(620,17);
+  const lines=balancedTextLines(ctx,text,maxWidth,2);
+  const lineHeight=21;
+  const total=(lines.length-1)*lineHeight;
+  ctx.save();
+  ctx.textBaseline='middle';
+  lines.forEach((line,i)=>{
+    const yy=centerY-total/2+i*lineHeight;
+    ctx.fillText(line,x,yy);
+  });
+  ctx.restore();
+}
+
 drawPdf = function(){
   const c=el.canvas, ctx=c.getContext('2d');
   c.width=W; c.height=H;
@@ -55,9 +149,9 @@ drawHeader = function(ctx,theme){
   ctx.font=weight(800,53);
   ctx.fillText(state.title || '作品利用ガイド',left,151);
 
+  const description=`「${state.workName || 'この作品'}」を使うときのルールを、ひと目で確認できるようにまとめています。`;
   ctx.fillStyle=theme.muted;
-  ctx.font=weight(500,20);
-  wrapText(ctx,`「${state.workName || 'この作品'}」を使うときのルールを、ひと目で確認できるようにまとめています。`,left,207,710,31,2);
+  drawAdaptiveSentence(ctx,description,left,207,710);
 
   if(illustration){
     const x=958,y=61,w=202,h=202;
@@ -152,10 +246,10 @@ drawPanel = function(ctx,x,y,w,h,key,items,theme){
       ctx.stroke();
     }
 
-    drawPolicyIcon(ctx,item,x+38,yy+31,sc.icon);
+    const centerY=yy+31;
+    drawPolicyIcon(ctx,item,x+38,centerY,sc.icon);
     ctx.fillStyle=theme.ink;
-    ctx.font=weight(620,17);
-    wrapText(ctx,item.label,x+65,yy+21,w-89,23,2);
+    drawCenteredPolicyLabel(ctx,item.label,x+65,centerY,w-89);
   });
 };
 
