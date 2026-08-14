@@ -1,0 +1,96 @@
+.image-editor-overlay{
+  position:fixed;
+  inset:0;
+  z-index:1000;
+  display:grid;
+  place-items:center;
+  padding:24px;
+  background:rgba(15,23,42,.62);
+  backdrop-filter:blur(5px);
+}
+.image-editor-overlay[hidden]{display:none}
+.image-editor-dialog{
+  width:min(680px,100%);
+  max-height:min(860px,calc(100dvh - 32px));
+  overflow:auto;
+  background:#fff;
+  border:1px solid #d0d7de;
+  border-radius:14px;
+  box-shadow:0 24px 70px rgba(15,23,42,.28);
+}
+.image-editor-head{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:18px;
+  padding:20px 22px 16px;
+  border-bottom:1px solid #eaeef2;
+}
+.image-editor-head h2{margin:0;font-size:1.08rem;letter-spacing:-.01em}
+.image-editor-head p{margin:5px 0 0;color:#667085;font-size:.78rem;line-height:1.55}
+.image-editor-close{
+  width:34px;height:34px;display:grid;place-items:center;flex:0 0 auto;
+  border:1px solid #d0d7de;border-radius:7px;background:#fff;color:#59636e;
+  font-size:1.15rem;line-height:1
+}
+.image-editor-close:hover{background:#f6f8fa;color:#1f2328}
+.image-editor-body{padding:20px 22px}
+.image-editor-stage{
+  width:min(460px,100%);
+  aspect-ratio:1;
+  margin:0 auto;
+  position:relative;
+  overflow:hidden;
+  border:1px solid #b8c3d1;
+  border-radius:10px;
+  background:#eaeef2;
+  box-shadow:0 0 0 4px #f6f8fa;
+  cursor:grab;
+  touch-action:none;
+  user-select:none;
+}
+.image-editor-stage.is-dragging{cursor:grabbing}
+.image-editor-canvas{display:block;width:100%;height:100%;touch-action:none}
+.image-editor-hint{
+  display:flex;align-items:center;justify-content:center;gap:7px;
+  margin:13px 0 0;color:#667085;font-size:.74rem
+}
+.image-editor-controls{
+  width:min(460px,100%);
+  margin:18px auto 0;
+  padding-top:16px;
+  border-top:1px solid #eaeef2;
+}
+.image-editor-control-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px}
+.image-editor-control-head strong{font-size:.79rem;color:#344054}
+.image-editor-control-head span{font-size:.72rem;color:#667085;font-variant-numeric:tabular-nums}
+.image-editor-zoom{width:100%;accent-color:#57606a}
+.image-editor-tools{display:flex;justify-content:flex-end;margin-top:10px}
+.image-editor-reset{
+  border:0;background:none;padding:5px 0;color:#57606a;font-size:.75rem;font-weight:650
+}
+.image-editor-reset:hover{color:#1f2328;text-decoration:underline}
+.image-editor-foot{
+  display:flex;justify-content:flex-end;gap:9px;
+  padding:15px 22px 20px;
+  border-top:1px solid #eaeef2
+}
+.image-editor-button{
+  min-height:40px;padding:9px 15px;border-radius:7px;font-weight:700;font-size:.82rem
+}
+.image-editor-cancel{border:1px solid #d0d7de;background:#fff;color:#344054}
+.image-editor-cancel:hover{background:#f6f8fa}
+.image-editor-apply{border:1px solid #24292f;background:#24292f;color:#fff;padding-inline:20px}
+.image-editor-apply:hover{background:#1f2328}
+.image-editor-apply:disabled{opacity:.55;cursor:default}
+.image-reedit-button{
+  border:0;background:none;color:#0969da;font-weight:650;font-size:inherit;padding:0
+}
+.image-reedit-button[hidden]{display:none}
+@media(max-width:600px){
+  .image-editor-overlay{padding:10px}
+  .image-editor-dialog{max-height:calc(100dvh - 20px);border-radius:11px}
+  .image-editor-head,.image-editor-body{padding-left:16px;padding-right:16px}
+  .image-editor-foot{padding:13px 16px 16px}
+  .image-editor-stage{width:min(100%,430px)}
+}
