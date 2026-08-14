@@ -48,6 +48,10 @@ PDFはHTMLのスクリーンショットではなく、**CanvasへA4レイアウ
 - ユーザー画像への差し替え対応
 - Blue / Mint / Lavender / Warm テーマ
 
+## 設計ドキュメント
+
+- [多言語対応 設計方針](docs/i18n-plan.md) — 日本語 / 英語 / 簡体字中国語 / 韓国語のエディタUI・PDF出力に関する実装計画
+
 ## ファイル構成
 
 ```text
@@ -57,6 +61,8 @@ PDFはHTMLのスクリーンショットではなく、**CanvasへA4レイアウ
 ├── app.js
 ├── presets.js
 ├── assets.js
+├── docs/
+│   └── i18n-plan.md
 ├── README.md
 └── LICENSE
 ```
