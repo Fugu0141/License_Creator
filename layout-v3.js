@@ -2,6 +2,7 @@
 
 // Layout refinements that intentionally keep the current editorial design.
 // CC pages use content-sized status columns and a single dedicated license strip.
+// Credit is treated as a first-class rule and gets its own horizontal strip.
 // Contact is omitted entirely when the user leaves it blank.
 
 drawPdf = function(){
@@ -16,15 +17,18 @@ drawPdf = function(){
   drawMeta(ctx,theme);
   const statusLayout=drawStatusPanels(ctx,theme);
 
-  let bottomY=1138;
+  let creditY=statusLayout.bottom+24;
   let footerY=1608;
+
   if(state.mode==='cc'){
-    const stripY=statusLayout.bottom+24;
-    drawCcLicenseStrip(ctx,theme,stripY);
-    bottomY=stripY+174;
+    const ccY=statusLayout.bottom+24;
+    drawCcLicenseStrip(ctx,theme,ccY);
+    creditY=ccY+172;
     footerY=1498;
   }
 
+  drawCreditStrip(ctx,theme,creditY);
+  const bottomY=creditY+156;
   drawBottom(ctx,theme,bottomY,footerY);
 };
 
@@ -191,25 +195,59 @@ function drawFlexibleBlock(ctx,text,x,y,maxWidth,maxLines=6){
   drawBalancedText(ctx,value,x,y,maxWidth,23,maxLines);
 }
 
-function drawCreditCard(ctx,s,y,theme){
-  const cardX=s.x+8;
-  const cardY=y+22;
-  const cardW=s.w-16;
-  const cardH=188;
-
-  roundedFill(ctx,cardX,cardY,cardW,cardH,10,'#f8fafc');
-  strokeRound(ctx,cardX,cardY,cardW,cardH,10,theme.line,1);
-
-  const px=cardX+20;
-  drawBottomIcon(ctx,'credit',px+9,cardY+30,theme);
-  ctx.fillStyle=theme.ink;
-  ctx.font=weight(680,13);
-  ctx.fillText('CREDIT',px,cardY+66);
-  ctx.fillStyle=theme.muted;
-  drawCreditNaturally(ctx,creditSentence(),px,cardY+100,cardW-40);
+function creditStripContent(){
+  const raw=String(creditSentence()||'').replace(/\s+/g,' ').trim();
+  const match=raw.match(/^(.*?)(?:\s*)(例[:：].*)$/);
+  return {
+    headline:(match?match[1]:raw).trim(),
+    detail:(match?match[2]:'').trim()
+  };
 }
 
-drawBottom = function(ctx,theme,y=1138,footerY=1608){
+function creditStripStatusLabel(){
+  const raw=String(creditSentence()||'');
+  if(state.mode==='software') return 'LICENSE NOTICE';
+  if(/不要/.test(raw)) return 'NOT REQUIRED';
+  if(/推奨/.test(raw)) return 'RECOMMENDED';
+  return 'REQUIRED';
+}
+
+function drawCreditStrip(ctx,theme,y){
+  const x=78,w=1084,h=132;
+  const content=creditStripContent();
+
+  roundedFill(ctx,x,y,w,h,10,'#f8fafc');
+  strokeRound(ctx,x,y,w,h,10,theme.line,1);
+
+  ctx.fillStyle=theme.muted;
+  ctx.font=weight(650,12);
+  ctx.fillText('CREDIT / ATTRIBUTION',x+24,y+29);
+
+  const iconX=x+50;
+  const iconY=y+79;
+  roundedFill(ctx,x+24,y+48,54,54,8,'#ffffff');
+  strokeRound(ctx,x+24,y+48,54,54,8,theme.line,1);
+  drawBottomIcon(ctx,'credit',iconX,iconY,theme);
+
+  const textX=x+104;
+  ctx.fillStyle=theme.ink;
+  ctx.font=weight(700,20);
+  drawBalancedText(ctx,content.headline||'クレジット表記',textX,y+69,680,25,2);
+
+  if(content.detail){
+    ctx.fillStyle=theme.muted;
+    ctx.font=weight(500,13.5);
+    drawBalancedText(ctx,content.detail,textX,y+101,680,19,2);
+  }
+
+  ctx.fillStyle=theme.faint;
+  ctx.font=weight(600,11.5);
+  ctx.textAlign='right';
+  ctx.fillText(creditStripStatusLabel(),x+w-24,y+73);
+  ctx.textAlign='left';
+};
+
+drawBottom = function(ctx,theme,y=1268,footerY=1608){
   const x=78,w=1084;
   ctx.strokeStyle=theme.lineStrong;
   ctx.lineWidth=1;
@@ -222,13 +260,7 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
   const sections=buildBottomSections(x,w,hasContact);
 
   sections.forEach((s,i)=>{
-    if(s.kind==='credit'){
-      drawCreditCard(ctx,s,y,theme);
-      return;
-    }
-
-    const previous=sections[i-1];
-    if(i>0 && previous?.kind!=='credit'){
+    if(i>0){
       ctx.strokeStyle=theme.line;
       ctx.lineWidth=1;
       ctx.beginPath();
@@ -269,14 +301,12 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
 function buildBottomSections(x,w,hasContact){
   if(hasContact){
     return [
-      {x,w:300,title:'CREDIT',kind:'credit'},
-      {x:x+300,w:484,title:'NOTE',kind:'note'},
-      {x:x+784,w:300,title:'CONTACT',kind:'contact'}
+      {x,w:760,title:'NOTE',kind:'note'},
+      {x:x+760,w:324,title:'CONTACT',kind:'contact'}
     ];
   }
 
   return [
-    {x,w:320,title:'CREDIT',kind:'credit'},
-    {x:x+320,w:764,title:'NOTE',kind:'note'}
+    {x,w:1084,title:'NOTE',kind:'note'}
   ];
 }
