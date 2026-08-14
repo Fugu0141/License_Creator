@@ -1,9 +1,8 @@
 'use strict';
 
-// Some feature layers are loaded after app.js. The PDF canvas reads directly
-// from `state`, so saved data can be correct even when a later UI pass leaves
-// form controls visually empty. Rehydrate the editor once every deferred
-// script has finished installing itself.
+// Final editor/state synchronization layer.
+// Keep restoration synchronous at DOMContentLoaded so a delayed animation
+// frame can never overwrite a user's first interaction with a select control.
 function restoreEditorFromState(){
   if(typeof syncControls !== 'function' || !state) return;
 
@@ -25,8 +24,54 @@ function restoreEditorFromState(){
   if(notes) notes.placeholder='必要に応じて、利用時の補足や注意事項を入力';
 }
 
+function installFinalSelectHandler(select, onChange){
+  if(!select || select.dataset.finalSelectHandler) return;
+  select.dataset.finalSelectHandler='true';
+
+  // Handle these state-bearing selects once, in capture phase. Older feature
+  // layers also registered bubbling listeners; stopping them here prevents
+  // duplicate/stale updates and guarantees the PDF uses the visible choice.
+  select.addEventListener('change',event=>{
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+    onChange(select.value);
+  },true);
+}
+
+function installLicenseSelectHandlers(){
+  installFinalSelectHandler(document.querySelector('#presetSelect'),value=>{
+    const preset=DATA.presets[value];
+    if(!preset) return;
+
+    state.preset=value;
+    state.policies={...preset.policies};
+    state.credit=preset.credit;
+    state.restrictions={...preset.restrictions};
+
+    // The preset changes several controls at once, so repaint the editor first
+    // and then run the normal render/save pipeline.
+    syncControls();
+    changed();
+  });
+
+  installFinalSelectHandler(document.querySelector('#ccLicenseSelect'),value=>{
+    if(!DATA.cc[value]) return;
+    state.ccLicense=value;
+    changed();
+  });
+
+  installFinalSelectHandler(document.querySelector('#softwareLicenseSelect'),value=>{
+    if(!DATA.software[value]) return;
+    state.softwareLicense=value;
+    changed();
+  });
+}
+
 document.addEventListener('DOMContentLoaded',()=>{
-  // Two animation frames ensure all DOMContentLoaded installers and their
-  // synchronous UI mutations have completed before the final rehydration.
-  requestAnimationFrame(()=>requestAnimationFrame(restoreEditorFromState));
+  // This file is loaded last. All deferred scripts and all earlier
+  // DOMContentLoaded installers are already registered; because listeners run
+  // in registration order, an immediate final sync is sufficient and avoids a
+  // late-rAF race with user input.
+  restoreEditorFromState();
+  installLicenseSelectHandlers();
 });
