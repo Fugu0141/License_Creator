@@ -136,6 +136,39 @@ function drawFlexibleBlock(ctx,text,x,y,maxWidth,maxLines=6){
   drawBalancedText(ctx,value,x,y,maxWidth,23,maxLines);
 }
 
+function isImportantBottomKind(kind){
+  return kind==='credit' || kind==='ng';
+}
+
+function drawImportantBottomCard(ctx,s,y,theme){
+  const cardX=s.x+8;
+  const cardY=y+22;
+  const cardW=s.w-16;
+  const cardH=188;
+  const isNg=s.kind==='ng';
+  const fill=isNg ? '#fff8f8' : '#f8fafc';
+  const border=isNg ? '#f1dddd' : theme.line;
+  const iconColor=isNg ? '#9b4a4a' : theme.muted;
+
+  roundedFill(ctx,cardX,cardY,cardW,cardH,10,fill);
+  strokeRound(ctx,cardX,cardY,cardW,cardH,10,border,1);
+
+  const px=cardX+20;
+  drawBottomIcon(ctx,s.kind,px+9,cardY+30,{...theme,muted:iconColor});
+
+  ctx.fillStyle=isNg ? '#7f1d1d' : theme.ink;
+  ctx.font=weight(680,13);
+  ctx.fillText(s.title,px,cardY+66);
+
+  ctx.fillStyle=theme.muted;
+  if(s.kind==='credit'){
+    drawCreditNaturally(ctx,creditSentence(),px,cardY+100,cardW-40);
+  }else{
+    const r=restrictionLabels();
+    drawFlexibleBlock(ctx,r.length?r.join(' / '):'特になし',px,cardY+100,cardW-40,4);
+  }
+}
+
 drawBottom = function(ctx,theme,y=1138,footerY=1608){
   const x=78,w=1084;
   ctx.strokeStyle=theme.lineStrong;
@@ -149,12 +182,18 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
   const sections=buildBottomSections(x,w,hasContact);
 
   sections.forEach((s,i)=>{
-    if(i>0){
+    if(isImportantBottomKind(s.kind)){
+      drawImportantBottomCard(ctx,s,y,theme);
+      return;
+    }
+
+    const previous=sections[i-1];
+    if(i>0 && !isImportantBottomKind(previous?.kind)){
       ctx.strokeStyle=theme.line;
       ctx.lineWidth=1;
       ctx.beginPath();
-      ctx.moveTo(s.x,y+24);
-      ctx.lineTo(s.x,y+228);
+      ctx.moveTo(s.x,y+28);
+      ctx.lineTo(s.x,y+222);
       ctx.stroke();
     }
 
@@ -165,12 +204,7 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
     ctx.fillText(s.title,px,y+76);
 
     ctx.fillStyle=theme.muted;
-    if(s.kind==='credit'){
-      drawCreditNaturally(ctx,creditSentence(),px,y+110,s.w-40);
-    }else if(s.kind==='ng'){
-      const r=restrictionLabels();
-      drawFlexibleBlock(ctx,r.length?r.join(' / '):'特になし',px,y+110,s.w-40,5);
-    }else if(s.kind==='note'){
+    if(s.kind==='note'){
       drawFlexibleBlock(ctx,bottomNote(),px,y+110,s.w-42,6);
     }else if(s.kind==='contact'){
       drawFlexibleBlock(ctx,String(state.contact).trim(),px,y+110,s.w-40,6);
@@ -196,29 +230,29 @@ function buildBottomSections(x,w,hasContact){
   if(state.mode==='cc'){
     if(hasContact){
       return [
-        {x,w:250,title:'CREDIT',kind:'credit'},
-        {x:x+250,w:534,title:'NOTE',kind:'note'},
+        {x,w:300,title:'CREDIT',kind:'credit'},
+        {x:x+300,w:484,title:'NOTE',kind:'note'},
         {x:x+784,w:300,title:'CONTACT',kind:'contact'}
       ];
     }
     return [
-      {x,w:300,title:'CREDIT',kind:'credit'},
-      {x:x+300,w:784,title:'NOTE',kind:'note'}
+      {x,w:320,title:'CREDIT',kind:'credit'},
+      {x:x+320,w:764,title:'NOTE',kind:'note'}
     ];
   }
 
   if(hasContact){
     return [
-      {x,w:235,title:'CREDIT',kind:'credit'},
-      {x:x+235,w:235,title:'NG',kind:'ng'},
-      {x:x+470,w:390,title:'NOTE',kind:'note'},
+      {x,w:260,title:'CREDIT',kind:'credit'},
+      {x:x+260,w:260,title:'NG',kind:'ng'},
+      {x:x+520,w:340,title:'NOTE',kind:'note'},
       {x:x+860,w:224,title:'CONTACT',kind:'contact'}
     ];
   }
 
   return [
-    {x,w:250,title:'CREDIT',kind:'credit'},
-    {x:x+250,w:280,title:'NG',kind:'ng'},
-    {x:x+530,w:554,title:'NOTE',kind:'note'}
+    {x,w:280,title:'CREDIT',kind:'credit'},
+    {x:x+280,w:300,title:'NG',kind:'ng'},
+    {x:x+580,w:504,title:'NOTE',kind:'note'}
   ];
 }
