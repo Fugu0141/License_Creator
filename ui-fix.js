@@ -9,6 +9,32 @@ changed = function(){
   syncSegment();
 };
 
+function installCreditControlFix(){
+  const segment=document.querySelector('[data-segment="credit"]');
+  if(!segment || segment.dataset.creditControlFixed) return;
+  segment.dataset.creditControlFixed='true';
+
+  // app.js and enhancements.js both register a bubbling click handler for this
+  // control. Handle it once in capture phase and stop those duplicate handlers
+  // so later UI layers cannot make the visual state stale or race the setting.
+  segment.addEventListener('click',e=>{
+    const button=e.target.closest('button[data-value]');
+    if(!button || !segment.contains(button)) return;
+
+    e.preventDefault();
+    e.stopPropagation();
+    e.stopImmediatePropagation();
+
+    const value=button.dataset.value;
+    if(!['required','recommended','none'].includes(value)) return;
+
+    state.credit=value;
+    syncSegment();
+    queueRender();
+    saveState();
+  },true);
+}
+
 function makeStepFlow(){
   const flow=document.createElement('div');
   flow.className='step-flow';
@@ -65,5 +91,6 @@ function installWorkflowFlow(){
 
 document.addEventListener('DOMContentLoaded', () => {
   syncSegment();
+  installCreditControlFix();
   installWorkflowFlow();
 });
