@@ -74,7 +74,7 @@ function drawCcLicenseStrip(ctx,theme,y){
   ctx.fillText(state.ccLicense,textX,y+66);
   ctx.fillStyle=theme.muted;
   ctx.font=weight(500,13.5);
-  wrapText(ctx,license.url,textX,y+94,560,20,2);
+  drawBalancedText(ctx,license.url,textX,y+94,560,20,2);
 
   ctx.fillStyle=theme.faint;
   ctx.font=weight(500,11.5);
@@ -82,6 +82,59 @@ function drawCcLicenseStrip(ctx,theme,y){
   ctx.fillText('Official Creative Commons license',x+w-24,y+66);
   ctx.textAlign='left';
 };
+
+function fitSingleLine(ctx,text,maxWidth,startSize=14.5,minSize=11.5){
+  for(let size=startSize;size>=minSize;size-=.5){
+    ctx.font=weight(500,size);
+    if(ctx.measureText(text).width<=maxWidth) return size;
+  }
+  return null;
+}
+
+function drawCreditNaturally(ctx,text,x,y,maxWidth){
+  const value=String(text||'').replace(/\s+/g,' ').trim();
+  const match=value.match(/^(.*?)(?:\s*)(例[:：].*)$/);
+
+  if(match){
+    const intro=match[1].trim();
+    const example=match[2].trim();
+    ctx.font=weight(500,14.5);
+    drawBalancedText(ctx,intro,x,y,maxWidth,22,2);
+
+    const exampleY=y+27;
+    const fitted=fitSingleLine(ctx,example,maxWidth,14,11);
+    if(fitted){
+      ctx.font=weight(500,fitted);
+      ctx.fillText(example,x,exampleY);
+    }else{
+      ctx.font=weight(500,11);
+      drawBalancedText(ctx,example,x,exampleY,maxWidth,18,2);
+    }
+    return;
+  }
+
+  const fitted=fitSingleLine(ctx,value,maxWidth,14.5,12);
+  if(fitted){
+    ctx.font=weight(500,fitted);
+    ctx.fillText(value,x,y);
+  }else{
+    ctx.font=weight(500,13.5);
+    drawBalancedText(ctx,value,x,y,maxWidth,22,3);
+  }
+}
+
+function drawFlexibleBlock(ctx,text,x,y,maxWidth,maxLines=6){
+  const value=String(text||'').replace(/\s+/g,' ').trim();
+  if(!value) return;
+  const fitted=fitSingleLine(ctx,value,maxWidth,14.5,12.5);
+  if(fitted){
+    ctx.font=weight(500,fitted);
+    ctx.fillText(value,x,y);
+    return;
+  }
+  ctx.font=weight(500,14);
+  drawBalancedText(ctx,value,x,y,maxWidth,23,maxLines);
+}
 
 drawBottom = function(ctx,theme,y=1138,footerY=1608){
   const x=78,w=1084;
@@ -111,23 +164,16 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
     ctx.font=weight(650,13);
     ctx.fillText(s.title,px,y+76);
 
+    ctx.fillStyle=theme.muted;
     if(s.kind==='credit'){
-      ctx.fillStyle=theme.muted;
-      ctx.font=weight(500,14.5);
-      wrapText(ctx,creditSentence(),px,y+110,s.w-40,23,5);
+      drawCreditNaturally(ctx,creditSentence(),px,y+110,s.w-40);
     }else if(s.kind==='ng'){
       const r=restrictionLabels();
-      ctx.fillStyle=theme.muted;
-      ctx.font=weight(500,14.5);
-      wrapText(ctx,r.length?r.join(' / '):'特になし',px,y+110,s.w-40,23,5);
+      drawFlexibleBlock(ctx,r.length?r.join(' / '):'特になし',px,y+110,s.w-40,5);
     }else if(s.kind==='note'){
-      ctx.fillStyle=theme.muted;
-      ctx.font=weight(500,14.5);
-      wrapText(ctx,bottomNote(),px,y+110,s.w-42,23,6);
+      drawFlexibleBlock(ctx,bottomNote(),px,y+110,s.w-42,6);
     }else if(s.kind==='contact'){
-      ctx.fillStyle=theme.muted;
-      ctx.font=weight(500,14.5);
-      wrapText(ctx,String(state.contact).trim(),px,y+110,s.w-40,23,6);
+      drawFlexibleBlock(ctx,String(state.contact).trim(),px,y+110,s.w-40,6);
     }
   });
 
