@@ -3,118 +3,107 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="創作物・Creative Commons・OSS向けの、読みやすい1ページライセンスPDFを作るツール。">
-  <meta name="theme-color" content="#101827">
+  <meta name="description" content="創作物・CC・OSS向けの、見ただけで分かる1ページライセンスPDFを作るツール。">
+  <meta name="theme-color" content="#eef5ff">
   <title>License Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <a class="brand" href="#top"><span class="brand-mark">L</span><span><strong>License Studio</strong><small>Simple visual license builder</small></span></a>
-      <span id="saveStatus" class="save-status">自動保存</span>
-    </header>
+  <header class="topbar">
+    <a class="brand" href="#"><span class="brand-mark">L</span><span><strong>License Studio</strong><small>Visual license PDF builder</small></span></a>
+    <span id="saveStatus">自動保存</span>
+  </header>
 
-    <main id="top" class="workspace">
-      <aside class="editor-panel">
-        <div class="editor-intro">
-          <p class="eyebrow">SIMPLE LICENSE BUILDER</p>
-          <h1>必要なことだけ、<br>1ページに。</h1>
-          <p>作品を使う人が迷わないように、利用条件を短く・見やすくまとめます。</p>
+  <main class="layout">
+    <aside class="editor">
+      <div class="intro">
+        <p class="eyebrow">SIMPLE BY DESIGN</p>
+        <h1>見れば分かる、<br>作品のルール。</h1>
+        <p>長い説明は減らして、<b>許可・要相談・禁止</b>を一目で伝えるPDFにします。</p>
+      </div>
+
+      <nav class="mode-tabs" aria-label="ライセンス形式">
+        <button type="button" class="mode-tab active" data-mode="custom">カスタム</button>
+        <button type="button" class="mode-tab" data-mode="cc">CC</button>
+        <button type="button" class="mode-tab" data-mode="software">OSS</button>
+      </nav>
+
+      <section class="card">
+        <div class="card-head"><span>1</span><div><strong>作品</strong><small>PDF上部に表示します</small></div></div>
+        <div class="form-grid">
+          <label class="field wide"><span>タイトル</span><input id="titleInput" type="text"></label>
+          <label class="field"><span>作者</span><input id="creatorInput" type="text"></label>
+          <label class="field"><span>作品名</span><input id="workNameInput" type="text"></label>
+          <label class="field"><span>種類</span><select id="workTypeSelect"></select></label>
+          <label class="field"><span>更新日</span><input id="updatedAtInput" type="date"></label>
+          <label class="field wide"><span>連絡先・配布ページ</span><input id="contactInput" type="text" placeholder="URL / X / メールなど"></label>
         </div>
-
-        <div class="mode-switcher" aria-label="ライセンスモード">
-          <button class="mode-button active" type="button" data-mode="custom"><strong>カスタム規約</strong><small>素材・創作物</small></button>
-          <button class="mode-button" type="button" data-mode="cc"><strong>Creative Commons</strong><small>CCライセンス</small></button>
-          <button class="mode-button" type="button" data-mode="software"><strong>ソフトウェア</strong><small>OSS</small></button>
-        </div>
-
-        <section class="editor-card">
-          <div class="card-title"><span>01</span><div><strong>作品情報</strong><small>PDFに表示する基本情報</small></div></div>
-          <div class="form-grid">
-            <label class="field span-2"><span>タイトル</span><input id="titleInput" type="text"></label>
-            <label class="field"><span>作者 / サークル</span><input id="creatorInput" type="text"></label>
-            <label class="field"><span>作品名</span><input id="workNameInput" type="text"></label>
-            <label class="field"><span>作品の種類</span><select id="workTypeSelect"></select></label>
-            <label class="field"><span>更新日</span><input id="updatedAtInput" type="date"></label>
-            <label class="field span-2"><span>連絡先・配布ページ</span><input id="contactInput" type="text" placeholder="URL / X / メールなど"></label>
-          </div>
-        </section>
-
-        <section id="customSection" class="editor-card">
-          <div class="card-title"><span>02</span><div><strong>主な利用条件</strong><small>6項目だけ決めれば完成</small></div></div>
-          <label class="field"><span>プリセット</span><select id="presetSelect"></select></label>
-          <div id="policyMatrix" class="policy-matrix"></div>
-
-          <div class="mini-section">
-            <strong>クレジット</strong>
-            <div class="segmented-control" data-segment="credit">
-              <button type="button" data-value="required">必須</button>
-              <button type="button" data-value="recommended">推奨</button>
-              <button type="button" data-value="none">不要</button>
-            </div>
-            <label class="field"><span>表記例</span><input id="creditTextInput" type="text"></label>
-          </div>
-
-          <details class="advanced-box">
-            <summary>詳細設定</summary>
-            <div class="advanced-body">
-              <div class="restriction-grid">
-                <label><input id="restrictionAdult" type="checkbox"><span>成人向け利用を禁止</span></label>
-                <label><input id="restrictionPolitical" type="checkbox"><span>政治・宗教利用を禁止</span></label>
-                <label><input id="restrictionAi" type="checkbox"><span>AI学習を禁止</span></label>
-                <label><input id="restrictionNft" type="checkbox"><span>NFT利用を禁止</span></label>
-                <label><input id="restrictionHarmful" type="checkbox"><span>違法・中傷利用を禁止</span></label>
-                <label><input id="restrictionImpersonation" type="checkbox"><span>公式を装う利用を禁止</span></label>
-              </div>
-              <label class="toggle-row"><input id="noExtractionInput" type="checkbox"><span>組み込み先から素材を抜き出して再利用することを禁止</span></label>
-              <label class="field"><span>補足</span><textarea id="notesInput" rows="4"></textarea></label>
-            </div>
-          </details>
-        </section>
-
-        <section id="ccSection" class="editor-card" hidden>
-          <div class="card-title"><span>02</span><div><strong>Creative Commons</strong><small>条件から自動で選択</small></div></div>
-          <div class="question-row"><span>商用利用</span><div class="segmented-control" data-segment="ccCommercial"><button type="button" data-value="yes">許可</button><button type="button" data-value="no">不可</button></div></div>
-          <div class="question-row"><span>改変作品の共有</span><div class="segmented-control three" data-segment="ccAdaptation"><button type="button" data-value="yes">許可</button><button type="button" data-value="same">同条件</button><button type="button" data-value="no">不可</button></div></div>
-          <label class="field"><span>ライセンス</span><select id="ccLicenseSelect"></select></label>
-          <div id="ccResultCard" class="standard-result"></div>
-        </section>
-
-        <section id="softwareSection" class="editor-card" hidden>
-          <div class="card-title"><span>02</span><div><strong>ソフトウェア</strong><small>代表的なOSSライセンス</small></div></div>
-          <label class="field"><span>ライセンス</span><select id="softwareLicenseSelect"></select></label>
-          <div id="softwareResultCard" class="standard-result"></div>
-          <label class="field"><span>適用範囲（任意）</span><textarea id="softwareScopeInput" rows="3" placeholder="例: 本リポジトリのソースコードに適用"></textarea></label>
-        </section>
-
-        <section class="editor-card">
-          <div class="card-title"><span>03</span><div><strong>見た目と出力</strong><small>最低限の調整だけ</small></div></div>
-          <div class="form-grid">
-            <label class="field"><span>テーマ</span><select id="themeSelect"><option value="midnight">Midnight</option><option value="paper">Paper</option><option value="mint">Mint</option><option value="lavender">Lavender</option></select></label>
-            <label class="field"><span>アクセント色</span><input id="accentInput" type="color"></label>
-            <label class="field span-2"><span>作品画像（任意）</span><input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
-          </div>
-          <div id="coverFileRow" class="file-row" hidden><span id="coverFileName"></span><button id="removeCoverButton" type="button">削除</button></div>
-          <button id="downloadPdfButton" class="download-button" type="button"><strong>PDFを書き出す</strong><small>A4・1ページ</small></button>
-          <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
-        </section>
-
-        <details class="backup-box">
-          <summary>設定の保存・復元</summary>
-          <div><button id="exportProjectButton" class="ghost-button" type="button">設定を保存</button><label class="ghost-button file-button">設定を開く<input id="importProjectInput" type="file" accept="application/json,.json"></label></div>
-        </details>
-      </aside>
-
-      <section class="preview-panel">
-        <div class="preview-toolbar"><div><p class="eyebrow">LIVE PREVIEW</p><strong>A4 / 1 page</strong></div></div>
-        <div class="preview-stage"><div id="pdfDocument" class="pdf-document"></div></div>
       </section>
-    </main>
-  </div>
+
+      <section id="customSection" class="card">
+        <div class="card-head"><span>2</span><div><strong>使い方</strong><small>6項目だけ選びます</small></div></div>
+        <label class="field"><span>プリセット</span><select id="presetSelect"></select></label>
+        <div id="policyMatrix" class="policy-list"></div>
+
+        <div class="mini-block">
+          <span class="mini-title">クレジット</span>
+          <div class="segmented" data-segment="credit">
+            <button type="button" data-value="required">必須</button>
+            <button type="button" data-value="recommended">推奨</button>
+            <button type="button" data-value="none">不要</button>
+          </div>
+          <label class="field"><span>表記例</span><input id="creditTextInput" type="text"></label>
+        </div>
+
+        <details class="details-box">
+          <summary>細かい禁止事項・補足</summary>
+          <div class="details-body">
+            <div class="check-grid">
+              <label><input id="restrictionAdult" type="checkbox">成人向け</label>
+              <label><input id="restrictionPolitical" type="checkbox">政治・宗教</label>
+              <label><input id="restrictionAi" type="checkbox">AI学習</label>
+              <label><input id="restrictionNft" type="checkbox">NFT</label>
+              <label><input id="restrictionHarmful" type="checkbox">違法・中傷</label>
+              <label><input id="restrictionImpersonation" type="checkbox">公式を装う利用</label>
+            </div>
+            <label class="field"><span>補足</span><textarea id="notesInput" rows="4"></textarea></label>
+          </div>
+        </details>
+      </section>
+
+      <section id="ccSection" class="card" hidden>
+        <div class="card-head"><span>2</span><div><strong>Creative Commons</strong><small>公式ライセンスを選択</small></div></div>
+        <label class="field"><span>ライセンス</span><select id="ccLicenseSelect"></select></label>
+        <div id="ccResultCard" class="result-card"></div>
+      </section>
+
+      <section id="softwareSection" class="card" hidden>
+        <div class="card-head"><span>2</span><div><strong>OSSライセンス</strong><small>代表的なものから選択</small></div></div>
+        <label class="field"><span>ライセンス</span><select id="softwareLicenseSelect"></select></label>
+        <div id="softwareResultCard" class="result-card"></div>
+        <label class="field"><span>適用範囲（任意）</span><textarea id="softwareScopeInput" rows="3" placeholder="例: ソースコードに適用"></textarea></label>
+      </section>
+
+      <section class="card">
+        <div class="card-head"><span>3</span><div><strong>デザイン</strong><small>PDFの雰囲気だけ選びます</small></div></div>
+        <div class="form-grid">
+          <label class="field"><span>テーマ</span><select id="themeSelect"><option value="blue">Blue</option><option value="mint">Mint</option><option value="lavender">Lavender</option><option value="warm">Warm</option></select></label>
+          <label class="field"><span>アクセント色</span><input id="accentInput" type="color"></label>
+          <label class="field wide"><span>右上のイラスト（任意）</span><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
+        </div>
+        <div class="image-actions"><span id="imageLabel">生成イラストを使用中</span><button id="resetImageButton" type="button">生成イラストに戻す</button></div>
+        <button id="downloadPdfButton" class="download" type="button"><strong>PDFを書き出す</strong><small>A4・1ページ</small></button>
+        <p id="statusMessage" role="status"></p>
+      </section>
+    </aside>
+
+    <section class="preview">
+      <div class="preview-head"><div><p class="eyebrow">LIVE PREVIEW</p><strong>A4 / 1 page</strong></div></div>
+      <div class="canvas-wrap"><canvas id="previewCanvas" width="1240" height="1754"></canvas></div>
+    </section>
+  </main>
 
   <script src="presets.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/html2canvas-pro@1.6.7/dist/html2canvas-pro.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
   <script src="app.js" defer></script>
 </body>
