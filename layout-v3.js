@@ -42,6 +42,61 @@ drawStatusPanels = function(ctx,theme){
   return { y, height:h, bottom:y+h };
 };
 
+// Final restrained panel renderer. It keeps the current editorial look while
+// allowing the deny column to hold the extra detailed restrictions.
+drawPanel = function(ctx,x,y,w,h,key,items,theme){
+  const sc=EDITORIAL_STATUS[key];
+  roundedFill(ctx,x,y,w,h,12,sc.tint);
+  strokeRound(ctx,x,y,w,h,12,theme.line,1);
+
+  drawStatusGlyph(ctx,key,x+34,y+43,sc.ink);
+  ctx.fillStyle=theme.ink;
+  ctx.font=weight(730,26);
+  ctx.fillText(STATUS[key],x+65,y+50);
+  ctx.fillStyle=theme.muted;
+  ctx.font=weight(600,11.5);
+  ctx.fillText(key==='allow'?'ALLOWED':key==='ask'?'ASK FIRST':'NOT ALLOWED',x+66,y+71);
+
+  ctx.strokeStyle=hexAlpha(theme.ink,.09);
+  ctx.lineWidth=1;
+  ctx.beginPath();
+  ctx.moveTo(x+22,y+94);
+  ctx.lineTo(x+w-22,y+94);
+  ctx.stroke();
+
+  if(!items.length){
+    ctx.fillStyle=theme.faint;
+    ctx.font=weight(500,15);
+    ctx.fillText('該当なし',x+24,y+142);
+    return;
+  }
+
+  const available=h-118;
+  const count=Math.min(items.length,12);
+  const rowH=Math.max(39,Math.min(66,available/count));
+  const iconX=x+38;
+  const textX=x+65;
+
+  items.slice(0,12).forEach((item,idx)=>{
+    const yy=y+112+idx*rowH;
+    if(idx>0){
+      ctx.strokeStyle=hexAlpha(theme.ink,.065);
+      ctx.lineWidth=1;
+      ctx.beginPath();
+      ctx.moveTo(x+22,yy);
+      ctx.lineTo(x+w-22,yy);
+      ctx.stroke();
+    }
+
+    const centerY=yy+rowH/2-1;
+    drawPolicyIcon(ctx,item,iconX,centerY,sc.icon);
+    ctx.fillStyle=theme.ink;
+    const fontSize=rowH<46?14.2:rowH<54?15.5:17;
+    ctx.font=weight(620,fontSize);
+    drawCenteredPolicyLabel(ctx,item.label,textX,centerY,w-89);
+  });
+};
+
 function drawCcLicenseStrip(ctx,theme,y){
   const x=78,w=1084,h=148;
   const license=DATA.cc[state.ccLicense];
@@ -136,37 +191,22 @@ function drawFlexibleBlock(ctx,text,x,y,maxWidth,maxLines=6){
   drawBalancedText(ctx,value,x,y,maxWidth,23,maxLines);
 }
 
-function isImportantBottomKind(kind){
-  return kind==='credit' || kind==='ng';
-}
-
-function drawImportantBottomCard(ctx,s,y,theme){
+function drawCreditCard(ctx,s,y,theme){
   const cardX=s.x+8;
   const cardY=y+22;
   const cardW=s.w-16;
   const cardH=188;
-  const isNg=s.kind==='ng';
-  const fill=isNg ? '#fff8f8' : '#f8fafc';
-  const border=isNg ? '#f1dddd' : theme.line;
-  const iconColor=isNg ? '#9b4a4a' : theme.muted;
 
-  roundedFill(ctx,cardX,cardY,cardW,cardH,10,fill);
-  strokeRound(ctx,cardX,cardY,cardW,cardH,10,border,1);
+  roundedFill(ctx,cardX,cardY,cardW,cardH,10,'#f8fafc');
+  strokeRound(ctx,cardX,cardY,cardW,cardH,10,theme.line,1);
 
   const px=cardX+20;
-  drawBottomIcon(ctx,s.kind,px+9,cardY+30,{...theme,muted:iconColor});
-
-  ctx.fillStyle=isNg ? '#7f1d1d' : theme.ink;
+  drawBottomIcon(ctx,'credit',px+9,cardY+30,theme);
+  ctx.fillStyle=theme.ink;
   ctx.font=weight(680,13);
-  ctx.fillText(s.title,px,cardY+66);
-
+  ctx.fillText('CREDIT',px,cardY+66);
   ctx.fillStyle=theme.muted;
-  if(s.kind==='credit'){
-    drawCreditNaturally(ctx,creditSentence(),px,cardY+100,cardW-40);
-  }else{
-    const r=restrictionLabels();
-    drawFlexibleBlock(ctx,r.length?r.join(' / '):'特になし',px,cardY+100,cardW-40,4);
-  }
+  drawCreditNaturally(ctx,creditSentence(),px,cardY+100,cardW-40);
 }
 
 drawBottom = function(ctx,theme,y=1138,footerY=1608){
@@ -182,13 +222,13 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
   const sections=buildBottomSections(x,w,hasContact);
 
   sections.forEach((s,i)=>{
-    if(isImportantBottomKind(s.kind)){
-      drawImportantBottomCard(ctx,s,y,theme);
+    if(s.kind==='credit'){
+      drawCreditCard(ctx,s,y,theme);
       return;
     }
 
     const previous=sections[i-1];
-    if(i>0 && !isImportantBottomKind(previous?.kind)){
+    if(i>0 && previous?.kind!=='credit'){
       ctx.strokeStyle=theme.line;
       ctx.lineWidth=1;
       ctx.beginPath();
@@ -227,32 +267,16 @@ drawBottom = function(ctx,theme,y=1138,footerY=1608){
 };
 
 function buildBottomSections(x,w,hasContact){
-  if(state.mode==='cc'){
-    if(hasContact){
-      return [
-        {x,w:300,title:'CREDIT',kind:'credit'},
-        {x:x+300,w:484,title:'NOTE',kind:'note'},
-        {x:x+784,w:300,title:'CONTACT',kind:'contact'}
-      ];
-    }
-    return [
-      {x,w:320,title:'CREDIT',kind:'credit'},
-      {x:x+320,w:764,title:'NOTE',kind:'note'}
-    ];
-  }
-
   if(hasContact){
     return [
-      {x,w:260,title:'CREDIT',kind:'credit'},
-      {x:x+260,w:260,title:'NG',kind:'ng'},
-      {x:x+520,w:340,title:'NOTE',kind:'note'},
-      {x:x+860,w:224,title:'CONTACT',kind:'contact'}
+      {x,w:300,title:'CREDIT',kind:'credit'},
+      {x:x+300,w:484,title:'NOTE',kind:'note'},
+      {x:x+784,w:300,title:'CONTACT',kind:'contact'}
     ];
   }
 
   return [
-    {x,w:280,title:'CREDIT',kind:'credit'},
-    {x:x+280,w:300,title:'NG',kind:'ng'},
-    {x:x+580,w:504,title:'NOTE',kind:'note'}
+    {x,w:320,title:'CREDIT',kind:'credit'},
+    {x:x+320,w:764,title:'NOTE',kind:'note'}
   ];
 }
