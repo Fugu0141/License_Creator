@@ -6,7 +6,7 @@
   <meta name="description" content="創作物・CC・OSS向けの、見ただけで分かる1ページライセンスPDFを作るツール。">
   <meta name="theme-color" content="#f6f8fa">
   <title>License Studio</title>
-  <link rel="stylesheet" href="style.css?v=20260815-0425">
+  <link rel="stylesheet" href="style.css?v=20260815-0431">
 </head>
 <body>
   <header class="topbar">
@@ -86,8 +86,8 @@
       <section class="card">
         <div class="card-head"><span>3</span><div><strong>デザイン</strong><small>PDFの雰囲気だけ選びます</small></div></div>
         <div class="form-grid">
-          <label class="field"><span>テーマ</span><select id="themeSelect"><option value="blue">Blue</option><option value="mint">Mint</option><option value="lavender">Lavender</option><option value="warm">Warm</option></select></label>
-          <label class="field"><span>アクセント色</span><input id="accentInput" type="color"></label>
+          <label class="field wide"><span>テーマ</span><select id="themeSelect"><option value="blue">Blue</option><option value="mint">Mint</option><option value="lavender">Lavender</option><option value="warm">Warm</option></select></label>
+          <input id="accentInput" type="hidden" value="#5b7fb7">
           <label class="field wide"><span>右上のイラスト（任意）</span><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
         </div>
         <div class="image-actions"><span id="imageLabel">生成イラストを使用中</span><button id="resetImageButton" type="button">生成イラストに戻す</button></div>
@@ -102,12 +102,13 @@
     </section>
   </main>
 
-  <script src="presets.js?v=20260815-0425"></script>
-  <script src="assets.js?v=20260815-0425"></script>
+  <script src="presets.js?v=20260815-0431"></script>
+  <script src="assets.js?v=20260815-0431"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
-  <script src="app.js?v=20260815-0425" defer></script>
-  <script src="enhancements.js?v=20260815-0425" defer></script>
-  <script src="cc-official.js?v=20260815-0425" defer></script>
-  <script src="design-v2.js?v=20260815-0425" defer></script>
+  <script src="app.js?v=20260815-0431" defer></script>
+  <script src="enhancements.js?v=20260815-0431" defer></script>
+  <script src="cc-official.js?v=20260815-0431" defer></script>
+  <script src="design-v2.js?v=20260815-0431" defer></script>
+  <script src="ui-fix.js?v=20260815-0431" defer></script>
 </body>
 </html>
