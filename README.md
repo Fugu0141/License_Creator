@@ -1,4 +1,4 @@
-# License Studio
+# License Creator
 
 見ただけで分かる **1ページのライセンス / 利用条件PDF** を作るGitHub Pages向けWebアプリです。
 
@@ -43,9 +43,8 @@ PDFはHTMLのスクリーンショットではなく、**CanvasへA4レイアウ
 - A4縦・1ページ
 - 上部: タイトル / 作者 / 作品名 / 更新日 / イラスト
 - 中央: 許可 / 要相談 / 禁止 の3カラム
-- 下部: クレジット / 追加禁止 / 補足 / 問い合わせ
-- デフォルトのキャラクターイラストを同梱
-- ユーザー画像への差し替え対応
+- 下部: クレジット / 補足 / 問い合わせ
+- ユーザー画像の読み込み・位置調整に対応
 - Blue / Mint / Lavender / Warm テーマ
 
 ## 設計ドキュメント
@@ -60,7 +59,6 @@ PDFはHTMLのスクリーンショットではなく、**CanvasへA4レイアウ
 ├── style.css
 ├── app.js
 ├── presets.js
-├── assets.js
 ├── docs/
 │   └── i18n-plan.md
 ├── README.md
