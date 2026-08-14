@@ -1,7 +1,7 @@
 'use strict';
 
 const DATA = window.LICENSE_DATA;
-const DEFAULT_ILLUSTRATION = window.LICENSE_ASSETS?.defaultIllustration || '';
+const DEFAULT_ILLUSTRATION = '';
 const STORAGE_KEY = 'license-studio-simple-v1';
 const W = 1240;
 const H = 1754;
@@ -76,7 +76,7 @@ function bind(){
   el.ccLicense.addEventListener('change',()=>{ state.ccLicense=el.ccLicense.value; changed(); });
   el.softwareLicense.addEventListener('change',()=>{ state.softwareLicense=el.softwareLicense.value; changed(); });
   el.imageInput.addEventListener('change',handleImage);
-  el.resetImage.addEventListener('click',async()=>{ state.customImage=''; el.imageInput.value=''; el.imageLabel.textContent='生成イラストを使用中'; await loadIllustration(); changed(); });
+  el.resetImage.addEventListener('click',async()=>{ state.customImage=''; el.imageInput.value=''; el.imageLabel.textContent='画像なし'; await loadIllustration(); changed(); });
   el.download.addEventListener('click',exportPdf);
 }
 function bindInput(node,key,event='input'){ node.addEventListener(event,()=>{ state[key]=node.value; changed(); }); }
@@ -85,7 +85,8 @@ function changed(){ syncMode(); syncPolicyButtons(); renderResults(); queueRende
 function syncControls(){
   el.title.value=state.title; el.creator.value=state.creator; el.workName.value=state.workName; el.workType.value=state.workType; el.updatedAt.value=state.updatedAt; el.contact.value=state.contact;
   el.preset.value=state.preset; el.creditText.value=state.creditText; el.notes.value=state.notes; el.theme.value=state.theme; el.accent.value=state.accent; el.ccLicense.value=state.ccLicense; el.softwareLicense.value=state.softwareLicense; el.softwareScope.value=state.softwareScope || '';
-  el.adult.checked=state.restrictions.adult; el.political.checked=state.restrictions.political; el.ai.checked=state.restrictions.ai; el.nft.checked=state.restrictions.nft; el.harmful.checked=state.restrictions.harmful; el.impersonation.checked=state.restrictions.impersonation;
+  el.adult.checked=state.restrictions.adult; el.political.checked=state.restrictions.political; if(el.ai) el.ai.checked=state.restrictions.ai; el.nft.checked=state.restrictions.nft; el.harmful.checked=state.restrictions.harmful; el.impersonation.checked=state.restrictions.impersonation;
+  el.imageLabel.textContent=state.customImage?'画像を設定済み':'画像なし';
   syncMode(); syncPolicyButtons(); syncSegment(); renderResults();
 }
 function syncMode(){
@@ -104,7 +105,8 @@ function renderAll(){ syncControls(); queueRender(); }
 function queueRender(){ if(renderQueued)return; renderQueued=true; requestAnimationFrame(()=>{ renderQueued=false; drawPdf(); }); }
 
 async function loadIllustration(){
-  illustration = await loadImage(state.customImage || DEFAULT_ILLUSTRATION).catch(()=>null);
+  const src=state.customImage || DEFAULT_ILLUSTRATION;
+  illustration = src ? await loadImage(src).catch(()=>null) : null;
 }
 function loadImage(src){ return new Promise((resolve,reject)=>{ const img=new Image(); img.onload=()=>resolve(img); img.onerror=reject; img.src=src; }); }
 async function handleImage(){
@@ -170,89 +172,58 @@ function drawPolicyIcon(ctx,item,cx,cy,color){
   const key=item.key;
   if(key==='commercial'){ ctx.font=weight(900,18); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('¥',cx,cy+1); }
   else if(key==='monetized'){ ctx.beginPath(); ctx.moveTo(cx-6,cy-9); ctx.lineTo(cx+9,cy); ctx.lineTo(cx-6,cy+9); ctx.closePath(); ctx.fill(); }
-  else if(key==='modification'){ ctx.beginPath(); ctx.moveTo(cx-8,cy+7); ctx.lineTo(cx+7,cy-8); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx+4,cy-9); ctx.lineTo(cx+9,cy-4); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx-9,cy+9); ctx.lineTo(cx-4,cy+8); ctx.stroke(); }
+  else if(key==='modification'){ ctx.beginPath(); ctx.moveTo(cx-8,cy+7); ctx.lineTo(cx+7,cy-8); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx+4,cy-9); ctx.lineTo(cx+9,cy-4); ctx.stroke(); }
   else if(key==='project'){ ctx.beginPath(); ctx.moveTo(cx-8,cy); ctx.lineTo(cx+8,cy); ctx.moveTo(cx,cy-8); ctx.lineTo(cx,cy+8); ctx.stroke(); }
-  else if(key==='merchandise'){ ctx.strokeRect(cx-9,cy-8,18,16); ctx.beginPath(); ctx.moveTo(cx,cy-8); ctx.lineTo(cx,cy+8); ctx.moveTo(cx-9,cy-1); ctx.lineTo(cx+9,cy-1); ctx.stroke(); }
+  else if(key==='merchandise'){ ctx.strokeRect(cx-8,cy-7,16,14); ctx.beginPath(); ctx.moveTo(cx,cy-7); ctx.lineTo(cx,cy+7); ctx.moveTo(cx-8,cy); ctx.lineTo(cx+8,cy); ctx.stroke(); }
   else if(key==='redistribution'){ ctx.beginPath(); ctx.moveTo(cx-8,cy+7); ctx.lineTo(cx+7,cy-8); ctx.lineTo(cx+7,cy); ctx.moveTo(cx+7,cy-8); ctx.lineTo(cx-1,cy-8); ctx.stroke(); }
-  else { ctx.font=weight(900,18); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText(item.icon||'•',cx,cy+1); }
+  else if(key==='ai'){ ctx.font=weight(900,12); ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('AI',cx,cy+1); }
   ctx.restore();
 }
 
-function drawBottom(ctx,theme){
-  const x=62,y=1185,w=1116,h=430;
-  roundedFill(ctx,x,y,w,h,30,theme.panel); strokeRound(ctx,x,y,w,h,30,theme.line,2);
-  ctx.fillStyle=state.accent; ctx.font=weight(900,20); ctx.fillText('USE NOTES',x+30,y+43);
-  ctx.fillStyle=theme.ink; ctx.font=weight(900,30); ctx.fillText('使うときのお願い',x+30,y+82);
-
-  roundedFill(ctx,x+28,y+112,510,112,20,theme.soft);
-  ctx.fillStyle=theme.ink;ctx.font=weight(850,20);ctx.fillText('クレジット',x+50,y+147);
-  ctx.fillStyle=theme.muted;ctx.font=weight(600,17); const credit=creditSentence(); wrapText(ctx,credit,x+50,y+177,455,24,2);
-
-  roundedFill(ctx,x+558,y+112,530,112,20,theme.soft);
-  ctx.fillStyle=theme.ink;ctx.font=weight(850,20);ctx.fillText('追加の禁止',x+580,y+147);
-  const restrictions=restrictionLabels(); ctx.fillStyle=theme.muted;ctx.font=weight(650,17); wrapText(ctx,restrictions.length?restrictions.join(' / '):'特になし',x+580,y+177,485,24,2);
-
-  ctx.fillStyle=theme.ink;ctx.font=weight(850,20);ctx.fillText('補足',x+30,y+270);
-  ctx.fillStyle=theme.muted;ctx.font=weight(600,17); wrapText(ctx,bottomNote(),x+30,y+302,w-60,26,3);
-
-  roundedFill(ctx,62,1640,1116,74,24,theme.footer);
-  ctx.fillStyle='#fff';ctx.font=weight(850,18);ctx.fillText('ご利用ありがとうございます',88,1682);
-  ctx.font=weight(600,15);ctx.fillStyle='rgba(255,255,255,.72)';const contact=state.contact ? `問い合わせ: ${state.contact}` : `${state.creator || 'License Studio'} / ${state.workName || ''}`; ctx.textAlign='right';ctx.fillText(short(contact,58),1150,1682);ctx.textAlign='left';
-}
-
 function getGroups(){
-  if(state.mode==='cc'){
-    const d=DATA.cc[state.ccLicense]; return { allow:d.allow.map(label=>({label,icon:'✓'})), ask:d.ask.map(label=>({label,icon:'!'})), deny:d.deny.map(label=>({label,icon:'×'})) };
-  }
-  if(state.mode==='software'){
-    const d=DATA.software[state.softwareLicense]; return { allow:d.allow.map(label=>({label,icon:'✓'})), ask:d.ask.map(label=>({label,icon:'!'})), deny:d.deny.map(label=>({label,icon:'×'})) };
-  }
+  if(state.mode==='cc'){ const d=DATA.cc[state.ccLicense]; return {allow:d.allow.map(label=>({label,icon:'✓'})),ask:d.ask.map(label=>({label,icon:'!'})),deny:d.deny.map(label=>({label,icon:'×'}))}; }
+  if(state.mode==='software'){ const d=DATA.software[state.softwareLicense]; return {allow:d.allow.map(label=>({label,icon:'✓'})),ask:d.ask.map(label=>({label,icon:'!'})),deny:d.deny.map(label=>({label,icon:'×'}))}; }
   const groups={allow:[],ask:[],deny:[]}; DATA.policyItems.forEach(item=>groups[state.policies[item.key]].push(item)); return groups;
+}
+function drawBottom(ctx,theme){
+  const y=1190; roundedFill(ctx,62,y,1116,390,30,theme.panel); strokeRound(ctx,62,y,1116,390,30,theme.line,2);
+  ctx.fillStyle=state.accent; ctx.font=weight(850,17); ctx.fillText('USE NOTES',94,y+42);
+  ctx.fillStyle=theme.ink; ctx.font=weight(900,30); ctx.fillText('使うときのお願い',94,y+78);
+  const blocks=[['クレジット',creditSentence()],['追加の禁止',restrictionLabels().join(' / ')||'特になし']];
+  blocks.forEach((b,i)=>{ const x=94+i*530; roundedFill(ctx,x,y+110,500,104,22,theme.soft); ctx.fillStyle=theme.ink; ctx.font=weight(850,19); ctx.fillText(b[0],x+22,y+143); ctx.fillStyle=theme.muted; ctx.font=weight(650,16); wrapText(ctx,b[1],x+22,y+170,455,22,2); });
+  ctx.fillStyle=theme.ink; ctx.font=weight(850,18); ctx.fillText('補足',94,y+253); ctx.fillStyle=theme.muted; ctx.font=weight(600,16); wrapText(ctx,bottomNote(),94,y+281,1050,24,4);
+  roundedFill(ctx,62,1620,1116,70,22,theme.footer); ctx.fillStyle='#fff'; ctx.font=weight(800,17); ctx.fillText('ご利用ありがとうございます',88,1664); ctx.textAlign='right'; ctx.font=weight(700,15); ctx.fillStyle='rgba(255,255,255,.75)'; ctx.fillText(`${state.creator || 'Creator'} / ${state.workName || 'Work'}`,1150,1664); ctx.textAlign='left';
 }
 function creditSentence(){
   if(state.mode==='cc') return DATA.cc[state.ccLicense].credit;
   if(state.mode==='software') return 'ライセンス本文・著作権表示など、選択したOSSライセンスの条件に従ってください。';
-  if(state.credit==='none') return 'クレジット表記は不要です。';
-  if(state.credit==='recommended') return `表記を推奨します。${state.creditText ? ` 例: ${state.creditText}`:''}`;
-  return `表記が必要です。${state.creditText ? ` 例: ${state.creditText}`:''}`;
+  if(state.credit==='required') return state.creditText ? `表記必須。例: ${state.creditText}` : 'クレジット表記が必要です。';
+  if(state.credit==='recommended') return state.creditText ? `表記を推奨します。例: ${state.creditText}` : 'クレジット表記を推奨します。';
+  return 'クレジット表記は不要です。';
 }
-function restrictionLabels(){
-  if(state.mode!=='custom') return [];
-  const labels={adult:'成人向け',political:'政治・宗教',ai:'AI学習',nft:'NFT',harmful:'違法・中傷',impersonation:'公式を装う利用'};
-  return Object.entries(state.restrictions).filter(([,v])=>v).map(([k])=>labels[k]);
-}
-function bottomNote(){
-  if(state.mode==='cc') return `正式な条件は ${DATA.cc[state.ccLicense].url} を確認してください。`;
-  if(state.mode==='software') return `${DATA.software[state.softwareLicense].note}${state.softwareScope ? ` 適用範囲: ${state.softwareScope}`:''}`;
-  return state.notes || '判断に迷う利用は、事前に作者へお問い合わせください。';
-}
+function restrictionLabels(){ if(state.mode!=='custom')return []; const labels={adult:'成人向け',political:'政治・宗教',ai:'AI学習・生成AI',nft:'NFT',harmful:'違法・中傷',impersonation:'公式を装う利用'}; return Object.entries(state.restrictions).filter(([,v])=>v).map(([k])=>labels[k]); }
+function bottomNote(){ if(state.mode==='custom')return state.notes || '必要に応じて作者へお問い合わせください。'; if(state.mode==='cc')return `Creative Commons ${state.ccLicense} の条件に従って利用してください。`; const sw=DATA.software[state.softwareLicense]; return `${sw.note}${state.softwareScope ? ` 適用範囲: ${state.softwareScope}`:''}`; }
 
 async function exportPdf(){
+  el.download.disabled=true; setStatus('PDFを作成しています…');
   try{
-    if(!window.jspdf?.jsPDF) throw new Error('PDFライブラリを読み込めませんでした。');
-    el.download.disabled=true; setStatus('PDFを生成しています…'); drawPdf(); await new Promise(r=>requestAnimationFrame(r));
+    drawPdf(); await new Promise(r=>setTimeout(r,60));
     const { jsPDF }=window.jspdf; const pdf=new jsPDF({orientation:'portrait',unit:'mm',format:'a4',compress:true});
-    const image=el.canvas.toDataURL('image/jpeg',.96); pdf.addImage(image,'JPEG',0,0,210,297,undefined,'FAST');
-    pdf.setProperties({title:state.title||'License',author:state.creator||'License Studio',subject:'License / Terms of Use',creator:'License Studio'});
-    pdf.save(`${safeName(state.workName||'work')}-license.pdf`); setStatus('PDFを書き出しました。');
-  }catch(err){ console.error(err); setStatus(err.message||'PDFの生成に失敗しました。',true); }
-  finally{el.download.disabled=false;}
+    pdf.addImage(el.canvas.toDataURL('image/jpeg',.94),'JPEG',0,0,210,297,undefined,'FAST');
+    pdf.save(`${safeName(state.workName || 'license')}-license.pdf`); setStatus('PDFを書き出しました。');
+  }catch(err){ console.error(err); setStatus('PDFの作成に失敗しました。',true); }
+  finally{ el.download.disabled=false; }
 }
 
-function setStatus(msg,error=false){el.status.textContent=msg;el.status.style.color=error?'#b23850':'';}
-function safeName(s){return String(s).replace(/[\\/:*?"<>|]/g,'').trim().replace(/\s+/g,'-')||'license';}
-function weight(w,size){return `${w} ${size}px "Noto Sans JP","Yu Gothic",Meiryo,sans-serif`;}
-function roundedPath(ctx,x,y,w,h,r){r=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
-function roundedFill(ctx,x,y,w,h,r,color){ctx.fillStyle=color;roundedPath(ctx,x,y,w,h,r);ctx.fill();}
-function strokeRound(ctx,x,y,w,h,r,color,width){ctx.strokeStyle=color;ctx.lineWidth=width;roundedPath(ctx,x,y,w,h,r);ctx.stroke();}
-function drawImageCover(ctx,img,x,y,w,h){const s=Math.max(w/img.width,h/img.height);const sw=w/s,sh=h/s,sx=(img.width-sw)/2,sy=(img.height-sh)/2;ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h);}
-function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines=99){
-  const chars=Array.from(String(text||''));let line='';let lines=[];
-  for(const ch of chars){ if(ch==='\n'){lines.push(line);line='';continue;} const test=line+ch; if(ctx.measureText(test).width>maxWidth && line){lines.push(line);line=ch;}else line=test; }
-  if(line)lines.push(line); if(lines.length>maxLines){lines=lines.slice(0,maxLines);let last=lines[maxLines-1];while(ctx.measureText(last+'…').width>maxWidth && last.length>1)last=last.slice(0,-1);lines[maxLines-1]=last+'…';}
-  lines.forEach((l,i)=>ctx.fillText(l,x,y+i*lineHeight)); return lines.length;
-}
-function short(v,n){const s=String(v||'');return s.length>n?s.slice(0,n-1)+'…':s;}
-function hexAlpha(hex,a){let h=hex.replace('#','');if(h.length===3)h=h.split('').map(c=>c+c).join('');const n=parseInt(h,16);return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`;}
+function setStatus(text,error=false){ el.status.textContent=text; el.status.style.color=error?'#b42318':''; }
+function safeName(s){ return String(s).replace(/[\\/:*?"<>|]/g,'-').slice(0,70)||'license'; }
+function short(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…':s; }
+function weight(w,size){ return `${w} ${size}px "Noto Sans JP","Yu Gothic",Meiryo,sans-serif`; }
+function roundedFill(ctx,x,y,w,h,r,color){ ctx.fillStyle=color; roundedPath(ctx,x,y,w,h,r); ctx.fill(); }
+function strokeRound(ctx,x,y,w,h,r,color,lw){ ctx.strokeStyle=color; ctx.lineWidth=lw; roundedPath(ctx,x,y,w,h,r); ctx.stroke(); }
+function roundedPath(ctx,x,y,w,h,r){ const rr=Math.min(r,w/2,h/2);ctx.beginPath();ctx.moveTo(x+rr,y);ctx.arcTo(x+w,y,x+w,y+h,rr);ctx.arcTo(x+w,y+h,x,y+h,rr);ctx.arcTo(x,y+h,x,y,rr);ctx.arcTo(x,y,x+w,y,rr);ctx.closePath(); }
+function wrapText(ctx,text,x,y,maxWidth,lineHeight,maxLines=99){ let line='',lines=0; for(const ch of String(text)){ const test=line+ch; if(ctx.measureText(test).width>maxWidth&&line){ctx.fillText(line,x,y+lines*lineHeight);line=ch;lines++;if(lines>=maxLines)return;}else line=test;} if(line&&lines<maxLines)ctx.fillText(line,x,y+lines*lineHeight); }
+function drawImageCover(ctx,img,x,y,w,h){ const ir=img.width/img.height, r=w/h; let sx=0,sy=0,sw=img.width,sh=img.height; if(ir>r){sw=img.height*r;sx=(img.width-sw)/2;}else{sh=img.width/r;sy=(img.height-sh)/2;}ctx.drawImage(img,sx,sy,sw,sh,x,y,w,h); }
+function hexAlpha(hex,a){ const h=String(hex).replace('#',''); const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16); return `rgba(${(n>>16)&255},${(n>>8)&255},${n&255},${a})`; }
 
-document.addEventListener('DOMContentLoaded',init);
+init();
