@@ -69,7 +69,7 @@ function bind(){
   $$('.mode-tab').forEach(b=>b.addEventListener('click',()=>{ state.mode=b.dataset.mode; changed(); }));
   bindInput(el.title,'title'); bindInput(el.creator,'creator'); bindInput(el.workName,'workName'); bindInput(el.workType,'workType','change'); bindInput(el.updatedAt,'updatedAt','change'); bindInput(el.contact,'contact');
   bindInput(el.creditText,'creditText'); bindInput(el.notes,'notes'); bindInput(el.theme,'theme','change'); bindInput(el.accent,'accent','input'); bindInput(el.softwareScope,'softwareScope');
-  bindCheck(el.adult,'adult'); bindCheck(el.political,'political'); bindCheck(el.ai,'ai'); bindCheck(el.nft,'nft'); bindCheck(el.harmful,'harmful'); bindCheck(el.impersonation,'impersonation');
+  bindCheck(el.adult,'adult'); bindCheck(el.political,'political'); bindCheck(el.nft,'nft'); bindCheck(el.harmful,'harmful'); bindCheck(el.impersonation,'impersonation');
   el.preset.addEventListener('change',()=>{ const p=DATA.presets[el.preset.value]; state.preset=el.preset.value; state.policies={...p.policies}; state.credit=p.credit; state.restrictions={...p.restrictions}; syncControls(); changed(); });
   el.matrix.addEventListener('click',e=>{ const b=e.target.closest('button[data-value]'); if(!b)return; const row=b.closest('[data-policy]'); state.policies[row.dataset.policy]=b.dataset.value; changed(); });
   document.querySelector('[data-segment="credit"]').addEventListener('click',e=>{ const b=e.target.closest('button[data-value]'); if(!b)return; state.credit=b.dataset.value; changed(); });
@@ -79,8 +79,8 @@ function bind(){
   el.resetImage.addEventListener('click',async()=>{ state.customImage=''; el.imageInput.value=''; el.imageLabel.textContent='画像なし'; await loadIllustration(); changed(); });
   el.download.addEventListener('click',exportPdf);
 }
-function bindInput(node,key,event='input'){ node.addEventListener(event,()=>{ state[key]=node.value; changed(); }); }
-function bindCheck(node,key){ node.addEventListener('change',()=>{ state.restrictions[key]=node.checked; changed(); }); }
+function bindInput(node,key,event='input'){ if(!node)return; node.addEventListener(event,()=>{ state[key]=node.value; changed(); }); }
+function bindCheck(node,key){ if(!node)return; node.addEventListener('change',()=>{ state.restrictions[key]=node.checked; changed(); }); }
 function changed(){ syncMode(); syncPolicyButtons(); renderResults(); queueRender(); saveState(); }
 function syncControls(){
   el.title.value=state.title; el.creator.value=state.creator; el.workName.value=state.workName; el.workType.value=state.workType; el.updatedAt.value=state.updatedAt; el.contact.value=state.contact;
