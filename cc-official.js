@@ -67,9 +67,6 @@ function loadCcOfficialBadge(force = false){
   ccOfficialBadge = null;
 
   ccBadgePromise = (async () => {
-    // Prefer the current Creative Commons presskit. Some browsers/CDNs do not
-    // expose it to Canvas via CORS, so fall back to the unmodified CC-authored
-    // SVG copy hosted on Wikimedia Commons, which permits cross-origin Canvas use.
     for(const url of [info.official, info.canvas]){
       try{
         const img = await loadImageForCanvas(url);
@@ -110,57 +107,15 @@ renderResults = function(){
   const license = DATA.cc[state.ccLicense];
   const badge = ccBadgeInfo()?.official || '';
   el.ccResult.innerHTML = `
-    <div style="display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
-      <img src="${badge}" width="88" height="31" alt="${state.ccLicense} Creative Commons license button" style="display:block;width:88px;height:31px;object-fit:contain;image-rendering:auto;">
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+      <img src="${badge}" width="88" height="31" alt="${state.ccLicense} Creative Commons license button" style="display:block;width:88px;height:31px;object-fit:contain;">
       <div style="min-width:0;">
         <strong>${state.ccLicense}</strong>
-        <p style="margin:.35rem 0 0;">${license.allow.join(' / ')}${license.deny.length ? `　禁止: ${license.deny.join(' / ')}` : ''}</p>
+        <p style="margin:.3rem 0 0;">${license.allow.join(' / ')}${license.deny.length ? `　禁止: ${license.deny.join(' / ')}` : ''}</p>
       </div>
     </div>
-    <a href="${license.url}" target="_blank" rel="noreferrer" style="display:inline-block;margin-top:.65rem;font-size:.82rem;overflow-wrap:anywhere;">${license.url}</a>
+    <a href="${license.url}" target="_blank" rel="noreferrer" style="display:inline-block;margin-top:.6rem;font-size:.8rem;overflow-wrap:anywhere;">${license.url}</a>
   `;
-};
-
-const baseDrawBottomWithOfficialCc = drawBottom;
-drawBottom = function(ctx, theme){
-  baseDrawBottomWithOfficialCc(ctx, theme);
-  if(state.mode !== 'cc') return;
-
-  const license = DATA.cc[state.ccLicense];
-  const boxX = 620;
-  const boxY = 1297;
-  const boxW = 530;
-  const boxH = 112;
-
-  roundedFill(ctx, boxX, boxY, boxW, boxH, 20, theme.soft);
-  ctx.fillStyle = theme.ink;
-  ctx.font = weight(850, 19);
-  ctx.fillText('公式 Creative Commons ライセンス', boxX + 22, boxY + 31);
-
-  if(ccOfficialBadge){
-    const badgeW = 132;
-    const ratio = ccOfficialBadge.naturalHeight / ccOfficialBadge.naturalWidth || 31 / 88;
-    const badgeH = Math.round(badgeW * ratio);
-    ctx.drawImage(ccOfficialBadge, boxX + 22, boxY + 47, badgeW, badgeH);
-    ctx.fillStyle = theme.ink;
-    ctx.font = weight(850, 17);
-    ctx.fillText(state.ccLicense, boxX + 172, boxY + 67);
-    ctx.fillStyle = theme.muted;
-    ctx.font = weight(600, 12);
-    wrapText(ctx, license.url, boxX + 172, boxY + 89, boxW - 196, 17, 2);
-  }else{
-    // Last-resort fallback: never leave the license identity blank even if the
-    // browser blocks all external image sources.
-    roundedFill(ctx, boxX + 22, boxY + 48, 124, 44, 8, '#111111');
-    ctx.fillStyle = '#ffffff';
-    ctx.font = weight(900, 17);
-    ctx.fillText('CC', boxX + 34, boxY + 76);
-    ctx.font = weight(850, 13);
-    ctx.fillText(state.ccLicense.replace(/^CC\s*/, ''), boxX + 68, boxY + 76);
-    ctx.fillStyle = theme.muted;
-    ctx.font = weight(600, 12);
-    wrapText(ctx, license.url, boxX + 166, boxY + 62, boxW - 190, 17, 2);
-  }
 };
 
 const baseExportPdfWithOfficialCc = exportPdf;
