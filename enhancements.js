@@ -81,6 +81,14 @@ function semanticKey(label){
 }
 function semanticItem(label){ return { label, key:semanticKey(label), icon:'' }; }
 
+const DETAIL_RESTRICTION_ITEMS = {
+  adult: { key:'adult', label:'成人向け利用', icon:'' },
+  political: { key:'political', label:'政治・宗教利用', icon:'' },
+  nft: { key:'nft', label:'NFT・暗号資産利用', icon:'' },
+  harmful: { key:'harmful', label:'違法・中傷・有害利用', icon:'' },
+  impersonation: { key:'impersonation', label:'公式を装う利用', icon:'' }
+};
+
 function getGroups(){
   if(state.mode==='cc'){
     const d=DATA.cc[state.ccLicense];
@@ -92,11 +100,14 @@ function getGroups(){
   }
   const groups={allow:[],ask:[],deny:[]};
   DATA.policyItems.forEach(item=>groups[state.policies[item.key]].push(item));
+  Object.entries(DETAIL_RESTRICTION_ITEMS).forEach(([key,item])=>{
+    if(state.restrictions?.[key]) groups.deny.push(item);
+  });
   return groups;
 }
 
 function drawPolicyIcon(ctx,item,cx,cy,color){
-  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.8; ctx.lineCap='round'; ctx.lineJoin='round';
+  ctx.save(); ctx.strokeStyle=color; ctx.fillStyle=color; ctx.lineWidth=2.5; ctx.lineCap='round'; ctx.lineJoin='round';
   const key=item.key || semanticKey(item.label);
   if(key==='commercial') iconText(ctx,'¥',cx,cy,17);
   else if(key==='monetized'){ ctx.beginPath(); ctx.moveTo(cx-6,cy-8); ctx.lineTo(cx+8,cy); ctx.lineTo(cx-6,cy+8); ctx.closePath(); ctx.fill(); }
@@ -105,6 +116,28 @@ function drawPolicyIcon(ctx,item,cx,cy,color){
   else if(key==='merchandise'){ ctx.strokeRect(cx-8,cy-7,16,14); ctx.beginPath(); ctx.moveTo(cx,cy-7); ctx.lineTo(cx,cy+7); ctx.moveTo(cx-8,cy); ctx.lineTo(cx+8,cy); ctx.stroke(); }
   else if(key==='redistribution'){ ctx.beginPath(); ctx.moveTo(cx-8,cy+7); ctx.lineTo(cx+7,cy-8); ctx.lineTo(cx+7,cy); ctx.moveTo(cx+7,cy-8); ctx.lineTo(cx-1,cy-8); ctx.stroke(); }
   else if(key==='ai') iconText(ctx,'AI',cx,cy,12);
+  else if(key==='adult'){
+    ctx.beginPath(); ctx.arc(cx,cy,8,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-5,cy+5); ctx.lineTo(cx+5,cy-5); ctx.stroke();
+    iconText(ctx,'18',cx,cy,8.5);
+  }
+  else if(key==='political'){
+    ctx.beginPath(); ctx.moveTo(cx-7,cy+9); ctx.lineTo(cx-7,cy-9); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-6,cy-8); ctx.lineTo(cx+8,cy-5); ctx.lineTo(cx-6,cy+1); ctx.closePath(); ctx.stroke();
+  }
+  else if(key==='nft'){
+    ctx.beginPath(); ctx.moveTo(cx,cy-9); ctx.lineTo(cx+8,cy-4); ctx.lineTo(cx+8,cy+5); ctx.lineTo(cx,cy+9); ctx.lineTo(cx-8,cy+5); ctx.lineTo(cx-8,cy-4); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx-8,cy-4); ctx.lineTo(cx,cy); ctx.lineTo(cx+8,cy-4); ctx.moveTo(cx,cy); ctx.lineTo(cx,cy+9); ctx.stroke();
+  }
+  else if(key==='harmful'){
+    ctx.beginPath(); ctx.moveTo(cx,cy-9); ctx.lineTo(cx+8,cy-5); ctx.lineTo(cx+6,cy+5); ctx.lineTo(cx,cy+10); ctx.lineTo(cx-6,cy+5); ctx.lineTo(cx-8,cy-5); ctx.closePath(); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx,cy-5); ctx.lineTo(cx,cy+2); ctx.stroke(); ctx.beginPath(); ctx.arc(cx,cy+6,1.2,0,Math.PI*2); ctx.fill();
+  }
+  else if(key==='impersonation'){
+    ctx.beginPath(); ctx.arc(cx,cy-4,4.5,0,Math.PI*2); ctx.stroke();
+    ctx.beginPath(); ctx.arc(cx,cy+8,8,Math.PI,0); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(cx+5,cy-8); ctx.lineTo(cx+9,cy-4); ctx.moveTo(cx+9,cy-8); ctx.lineTo(cx+5,cy-4); ctx.stroke();
+  }
   else if(key==='sharealike'){ ctx.beginPath(); ctx.arc(cx,cy,8,-.8,2.2); ctx.stroke(); ctx.beginPath(); ctx.moveTo(cx+7,cy-6);ctx.lineTo(cx+9,cy-1);ctx.lineTo(cx+4,cy-2);ctx.stroke(); }
   else if(key==='source') iconText(ctx,'</>',cx,cy,10);
   else if(key==='copyright'){ ctx.strokeRect(cx-7,cy-9,14,18); ctx.beginPath(); ctx.moveTo(cx-4,cy-4);ctx.lineTo(cx+4,cy-4);ctx.moveTo(cx-4,cy);ctx.lineTo(cx+4,cy);ctx.moveTo(cx-4,cy+4);ctx.lineTo(cx+2,cy+4);ctx.stroke(); }
