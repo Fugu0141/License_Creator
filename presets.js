@@ -53,12 +53,12 @@ window.LICENSE_DATA = {
     'GPL-3.0': { allow:['商用利用','改変','再配布'], ask:['派生作品のソース公開','同一条件の継承'], deny:[], note:'強いコピーレフトのライセンスです。', url:'https://spdx.org/licenses/GPL-3.0-only.html' }
   },
   defaultState: {
-    mode:'custom', title:'作品利用ガイド', creator:'Fugu0141', workName:'My Creative Work', workType:'illustration',
+    mode:'custom', title:'作品利用ガイド', creator:'', workName:'', workType:'other',
     updatedAt:'', contact:'', theme:'blue', accent:'#5b8def', customImage:'', preset:'creator',
     policies:{ commercial:'ask', monetized:'allow', modification:'allow', project:'allow', merchandise:'ask', redistribution:'deny', ai:'deny' },
-    credit:'required', creditText:'© 2026 Fugu0141 / My Creative Work',
+    credit:'required', creditText:'',
     restrictions:{ adult:false, political:false, nft:true, harmful:true, impersonation:true },
-    notes:'作品のイメージを著しく損なう利用や、第三者に公式・公認であると誤認させる利用はできません。',
+    notes:'',
     ccLicense:'CC BY 4.0', softwareLicense:'MIT', softwareScope:''
   }
 };
