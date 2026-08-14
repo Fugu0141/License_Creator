@@ -3,141 +3,173 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="ソフトウェアからイラスト・音楽・3Dモデルまで、質問に答えてライセンスを選び、見やすく書き出せるツール。">
-  <title>License Creator</title>
+  <meta name="description" content="創作物・Creative Commons・OSSに対応した、見やすいライセンスPDFを作るブラウザアプリ。">
+  <meta name="theme-color" content="#0b1020">
+  <title>License Studio</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="page-shell">
-    <header class="site-header">
-      <div>
-        <p class="eyebrow">LICENSE TOOL FOR CODE & CREATIVE WORKS</p>
-        <h1>License Creator</h1>
-        <p class="lead">ソフトウェア、イラスト、音楽、3Dモデル、ゲーム。作品に合う利用条件を、質問から選ぶか直接指定して書き出せます。</p>
+  <div class="app-shell">
+    <header class="topbar">
+      <a class="brand" href="#top" aria-label="License Studio ホーム">
+        <span class="brand-mark" aria-hidden="true">L</span>
+        <span><strong>License Studio</strong><small>Visual license builder</small></span>
+      </a>
+      <div class="top-actions">
+        <span id="saveStatus" class="save-status">自動保存</span>
+        <button id="exportProjectButton" class="ghost-button compact" type="button">設定を保存</button>
+        <label class="ghost-button compact file-button">設定を開く<input id="importProjectInput" type="file" accept="application/json,.json"></label>
       </div>
-      <div class="status-pill" aria-label="動作方式">No build · GitHub Pages ready</div>
     </header>
 
-    <section class="panel start-panel" aria-labelledby="start-title">
-      <div class="section-heading">
-        <div><p class="step-label">START</p><h2 id="start-title">どうやって選びますか？</h2></div>
-        <span class="mini-note">あとから切り替え可能</span>
-      </div>
-      <div class="mode-grid" role="tablist" aria-label="ライセンス選択方法">
-        <button class="mode-card active" type="button" data-mode="wizard" role="tab" aria-selected="true"><span class="mode-icon">?</span><span><strong>質問から選ぶ</strong><small>作品の種類と希望条件からおすすめを提案</small></span></button>
-        <button class="mode-card" type="button" data-mode="manual" role="tab" aria-selected="false"><span class="mode-icon">≡</span><span><strong>ライセンスから選ぶ</strong><small>MIT / GPL / Creative Commons などを直接指定</small></span></button>
-      </div>
-    </section>
+    <main id="top" class="workspace">
+      <aside class="editor-panel">
+        <section class="editor-hero">
+          <p class="eyebrow">CREATE A LICENSE PEOPLE WILL ACTUALLY READ</p>
+          <h1>作品のルールを、<br><span>きれいなPDF</span>に。</h1>
+          <p>難しい法文を並べるだけではなく、許可・条件・禁止事項がひと目で伝わるライセンスシートを作ります。</p>
+        </section>
 
-    <section id="wizardPanel" class="panel wizard-panel" aria-labelledby="wizard-title">
-      <div class="section-heading">
-        <div><p class="step-label">GUIDED CHOOSER</p><h2 id="wizard-title">作品について教えてください</h2></div>
-        <span id="wizardProgress" class="mini-note">1 / 2</span>
-      </div>
+        <nav class="mode-switcher" aria-label="ライセンスモード">
+          <button class="mode-button active" type="button" data-mode="custom"><span>✦</span><strong>カスタム規約</strong><small>創作物全般</small></button>
+          <button class="mode-button" type="button" data-mode="cc"><span>CC</span><strong>Creative Commons</strong><small>標準ライセンス</small></button>
+          <button class="mode-button" type="button" data-mode="software"><span>&lt;/&gt;</span><strong>ソフトウェア</strong><small>OSSライセンス</small></button>
+        </nav>
 
-      <div class="wizard-section">
-        <h3>1. 何を配布しますか？</h3>
-        <div id="workTypeGrid" class="choice-grid work-type-grid">
-          <button type="button" class="choice-card selected" data-work-type="software"><strong>ソースコード</strong><small>アプリ、ライブラリ、Webツールなど</small></button>
-          <button type="button" class="choice-card" data-work-type="illustration"><strong>イラスト・画像</strong><small>写真、デザイン、素材など</small></button>
-          <button type="button" class="choice-card" data-work-type="model"><strong>3Dモデル</strong><small>モデル、テクスチャ、アセットなど</small></button>
-          <button type="button" class="choice-card" data-work-type="audio"><strong>音楽・音声</strong><small>BGM、SE、録音作品など</small></button>
-          <button type="button" class="choice-card" data-work-type="video"><strong>動画</strong><small>映像作品、モーションなど</small></button>
-          <button type="button" class="choice-card" data-work-type="document"><strong>文章・文書</strong><small>小説、資料、教材、記事など</small></button>
-          <button type="button" class="choice-card" data-work-type="composite"><strong>ゲーム・複合作品</strong><small>コード＋画像＋音楽などが混在</small></button>
-          <button type="button" class="choice-card" data-work-type="other"><strong>その他の創作物</strong><small>著作権で保護される一般的な作品</small></button>
+        <div class="editor-sections">
+          <details class="editor-card" open>
+            <summary><span class="section-number">01</span><span><strong>作品情報</strong><small>PDFのタイトルと著作者情報</small></span></summary>
+            <div class="editor-card-body form-grid">
+              <label class="field span-2"><span>PDFタイトル</span><input id="titleInput" type="text"></label>
+              <label class="field"><span>作者 / サークル / 組織</span><input id="creatorInput" type="text"></label>
+              <label class="field"><span>作品名</span><input id="workNameInput" type="text"></label>
+              <label class="field"><span>作品の種類</span><select id="workTypeSelect"></select></label>
+              <label class="field"><span>バージョン</span><input id="versionInput" type="text" placeholder="1.0"></label>
+              <label class="field"><span>更新日</span><input id="updatedAtInput" type="date"></label>
+              <label class="field"><span>作品URL</span><input id="workUrlInput" type="url" placeholder="https://..."></label>
+              <label class="field span-2"><span>問い合わせ先</span><input id="contactInput" type="text" placeholder="X / Web / メールなど"></label>
+            </div>
+          </details>
+
+          <details class="editor-card" open>
+            <summary><span class="section-number">02</span><span><strong>見た目</strong><small>PDFの雰囲気をカスタマイズ</small></span></summary>
+            <div class="editor-card-body">
+              <div class="form-grid">
+                <label class="field"><span>言語</span><select id="languageSelect"><option value="ja">日本語</option><option value="en">English</option><option value="both">日本語 + English</option></select></label>
+                <label class="field"><span>テーマ</span><select id="themeSelect"><option value="midnight">Midnight</option><option value="paper">Paper</option><option value="mint">Mint</option><option value="sunset">Sunset</option><option value="lavender">Lavender</option></select></label>
+                <label class="field"><span>アクセント色</span><span class="color-field"><input id="accentInput" type="color"><input id="accentTextInput" type="text" maxlength="7"></span></label>
+                <div class="field"><span>表紙イラスト</span><label class="upload-box"><input id="coverInput" type="file" accept="image/png,image/jpeg,image/webp,image/gif"><span class="upload-icon">＋</span><strong>画像を選択</strong><small>PNG / JPEG / WebP</small></label></div>
+              </div>
+              <div id="coverFileRow" class="file-row" hidden><span id="coverFileName"></span><button id="removeCoverButton" type="button">削除</button></div>
+            </div>
+          </details>
+
+          <details id="customSection" class="editor-card" open>
+            <summary><span class="section-number">03</span><span><strong>利用条件</strong><small>用途ごとに 許可 / 要相談 / 禁止</small></span></summary>
+            <div class="editor-card-body">
+              <div class="subhead-row"><div><strong>プリセット</strong><small>あとから細かく変更できます</small></div><select id="presetSelect"></select></div>
+              <div id="policyMatrix" class="policy-matrix"></div>
+
+              <div class="divider"></div>
+              <h3 class="mini-heading">クレジット</h3>
+              <div class="segmented-control" data-segment="credit">
+                <button type="button" data-value="required">必須</button>
+                <button type="button" data-value="recommended">推奨</button>
+                <button type="button" data-value="none">不要</button>
+              </div>
+              <label class="field top-gap"><span>クレジット表記例</span><input id="creditTextInput" type="text"></label>
+
+              <div class="divider"></div>
+              <h3 class="mini-heading">追加条件</h3>
+              <div class="toggle-list">
+                <label class="toggle-row"><input id="shareAlikeInput" type="checkbox"><span><strong>改変物に同じ条件を求める</strong><small>再配布を許可した場合の継承条件</small></span></label>
+                <label class="toggle-row"><input id="noExtractionInput" type="checkbox"><span><strong>組み込み先から素材を抜き出して再利用することを禁止</strong><small>ゲームや動画へ組み込んだ素材の抽出対策</small></span></label>
+              </div>
+
+              <div class="divider"></div>
+              <h3 class="mini-heading">用途別の禁止事項</h3>
+              <div class="restriction-grid">
+                <label><input id="restrictionAdult" type="checkbox"><span>成人向け</span></label>
+                <label><input id="restrictionPolitical" type="checkbox"><span>政治・宗教</span></label>
+                <label><input id="restrictionAi" type="checkbox"><span>AI学習</span></label>
+                <label><input id="restrictionNft" type="checkbox"><span>NFT / 暗号資産</span></label>
+                <label><input id="restrictionHarmful" type="checkbox"><span>違法・中傷・有害利用</span></label>
+                <label><input id="restrictionImpersonation" type="checkbox"><span>公式を装う利用</span></label>
+              </div>
+
+              <label class="field top-gap"><span>補足・注意事項</span><textarea id="notesInput" rows="5"></textarea></label>
+
+              <div class="divider"></div>
+              <div class="subhead-row"><div><strong>独自条項</strong><small>必要な項目だけ追加</small></div><button id="addClauseButton" class="small-button" type="button">＋ 条項を追加</button></div>
+              <div id="customClauses" class="clause-list"></div>
+            </div>
+          </details>
+
+          <details id="ccSection" class="editor-card" hidden open>
+            <summary><span class="section-number">03</span><span><strong>Creative Commons</strong><small>公式の6ライセンス + CC0</small></span></summary>
+            <div class="editor-card-body">
+              <div class="info-callout">CCライセンス本文を改変せず、あなたの作品にどのCCライセンスを適用するかを分かりやすく表示します。</div>
+              <div class="question-block">
+                <strong>商用利用を許可しますか？</strong>
+                <div class="segmented-control" data-segment="ccCommercial"><button type="button" data-value="yes">許可する</button><button type="button" data-value="no">許可しない</button></div>
+              </div>
+              <div class="question-block">
+                <strong>改変した作品の共有を許可しますか？</strong>
+                <div class="segmented-control three" data-segment="ccAdaptation"><button type="button" data-value="yes">許可</button><button type="button" data-value="same">同条件なら許可</button><button type="button" data-value="no">許可しない</button></div>
+              </div>
+              <label class="field"><span>または直接選択</span><select id="ccLicenseSelect"></select></label>
+              <div id="ccResultCard" class="standard-result"></div>
+            </div>
+          </details>
+
+          <details id="softwareSection" class="editor-card" hidden open>
+            <summary><span class="section-number">03</span><span><strong>ソフトウェアライセンス</strong><small>代表的なOSSライセンス</small></span></summary>
+            <div class="editor-card-body">
+              <div class="info-callout warning">標準OSSライセンスは独自条件を混ぜず、そのライセンスの条件をそのまま案内します。創作素材とコードを別条件にしたい場合は、PDF内で適用範囲を明確にしてください。</div>
+              <label class="field"><span>ライセンス</span><select id="softwareLicenseSelect"></select></label>
+              <div id="softwareResultCard" class="standard-result"></div>
+              <label class="field top-gap"><span>適用範囲・補足</span><textarea id="softwareScopeInput" rows="4" placeholder="例: 本リポジトリのソースコードに適用。画像・音楽は別途記載。"></textarea></label>
+            </div>
+          </details>
+
+          <details class="editor-card" open>
+            <summary><span class="section-number">04</span><span><strong>出力</strong><small>PDF・設定ファイル</small></span></summary>
+            <div class="editor-card-body">
+              <div class="export-options">
+                <label class="toggle-row"><input id="includeCoverPageInput" type="checkbox" checked><span><strong>表紙ページを含める</strong><small>画像や大きなタイトルを使った1ページ目</small></span></label>
+                <label class="toggle-row"><input id="includeDisclaimerInput" type="checkbox" checked><span><strong>末尾に注意書きを表示</strong><small>法的助言ではない旨など</small></span></label>
+              </div>
+              <button id="downloadPdfButton" class="download-button" type="button"><span>PDFを書き出す</span><small>A4 / 高解像度</small></button>
+              <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
+            </div>
+          </details>
         </div>
-      </div>
+      </aside>
 
-      <div id="softwareQuestions" class="wizard-section question-section">
-        <h3>2. ソースコードをどのくらい自由に使ってほしいですか？</h3>
-        <div class="question-block">
-          <p>派生物を配布するとき、ソース公開や同一条件をどこまで求めますか？</p>
-          <div class="radio-stack">
-            <label><input type="radio" name="softwarePolicy" value="permissive" checked><span><strong>特に求めない</strong><small>自由度を高くしたい → MIT / Apache系</small></span></label>
-            <label><input type="radio" name="softwarePolicy" value="file"><span><strong>変更したファイル単位</strong><small>他の部分には波及させたくない → MPL系</small></span></label>
-            <label><input type="radio" name="softwarePolicy" value="library"><span><strong>ライブラリ部分</strong><small>リンクするアプリまでは縛らない → LGPL系</small></span></label>
-            <label><input type="radio" name="softwarePolicy" value="project"><span><strong>派生作品全体</strong><small>配布時は同じ自由を守りたい → GPL系</small></span></label>
-            <label><input type="radio" name="softwarePolicy" value="network"><span><strong>Webサービスとして使う場合も</strong><small>ネットワーク越しの利用でもソース公開 → AGPL系</small></span></label>
-          </div>
+      <section class="preview-panel">
+        <div class="preview-toolbar">
+          <div><p class="eyebrow">LIVE PREVIEW</p><strong id="previewPageCount">2 pages</strong></div>
+          <div class="zoom-control"><button type="button" data-zoom="out">−</button><span id="zoomLabel">75%</span><button type="button" data-zoom="in">＋</button></div>
         </div>
-        <div id="patentQuestion" class="question-block">
-          <p>寛容なライセンスにする場合、明示的な特許ライセンス条項を重視しますか？</p>
-          <div class="segmented"><label><input type="radio" name="patentPolicy" value="no" checked><span>シンプルさ重視</span></label><label><input type="radio" name="patentPolicy" value="yes"><span>特許条項を重視</span></label></div>
-        </div>
-      </div>
 
-      <div id="creativeQuestions" class="wizard-section question-section" hidden>
-        <h3>2. 他の人にどこまで利用を許可しますか？</h3>
-        <div class="question-grid">
-          <div class="question-block"><p>作品そのものの共有・再配布を許可しますか？</p><div class="segmented"><label><input type="radio" name="allowSharing" value="yes" checked><span>許可する</span></label><label><input type="radio" name="allowSharing" value="no"><span>許可しない</span></label></div></div>
-          <div class="question-block creative-dependent"><p>利用時に作者名などのクレジットを必須にしますか？</p><div class="segmented"><label><input type="radio" name="requireAttribution" value="yes" checked><span>必須</span></label><label><input type="radio" name="requireAttribution" value="no"><span>不要</span></label></div></div>
-          <div class="question-block creative-dependent attribution-dependent"><p>商用利用を許可しますか？</p><div class="segmented"><label><input type="radio" name="allowCommercial" value="yes" checked><span>許可する</span></label><label><input type="radio" name="allowCommercial" value="no"><span>許可しない</span></label></div></div>
-          <div class="question-block creative-dependent attribution-dependent"><p>改変・翻案した作品の共有を許可しますか？</p><div class="segmented"><label><input type="radio" name="allowAdaptation" value="yes" checked><span>許可する</span></label><label><input type="radio" name="allowAdaptation" value="no"><span>許可しない</span></label></div></div>
-          <div id="shareAlikeQuestion" class="question-block creative-dependent attribution-dependent"><p>改変作品にも同じライセンスを要求しますか？</p><div class="segmented"><label><input type="radio" name="shareAlike" value="no" checked><span>要求しない</span></label><label><input type="radio" name="shareAlike" value="yes"><span>要求する</span></label></div></div>
+        <div id="previewStage" class="preview-stage">
+          <div id="pdfDocument" class="pdf-document"></div>
         </div>
-      </div>
-
-      <div id="compositeQuestions" class="wizard-section question-section" hidden>
-        <h3>2. 複合作品はコードと素材を分けて考えます</h3>
-        <p class="section-copy">ソースコードにはソフトウェア向けライセンス、画像・音楽・3DモデルなどにはCreative Commons系を適用する構成を作ります。</p>
-        <div class="composite-grid">
-          <label class="field"><span>ソースコード側</span><select id="compositeSoftwarePolicy"><option value="permissive">自由度重視（MIT）</option><option value="patent">特許条項も重視（Apache-2.0）</option><option value="file">ファイル単位で継承（MPL-2.0）</option><option value="library">ライブラリ部分を継承（LGPL-3.0）</option><option value="project">派生作品全体を継承（GPL-3.0）</option><option value="network">ネットワーク利用も対象（AGPL-3.0）</option></select></label>
-          <label class="field"><span>創作素材側</span><select id="compositeCreativeLicense"><option value="cc-by-4.0">CC BY 4.0</option><option value="cc-by-sa-4.0">CC BY-SA 4.0</option><option value="cc-by-nc-4.0">CC BY-NC 4.0</option><option value="cc-by-nc-sa-4.0">CC BY-NC-SA 4.0</option><option value="cc-by-nd-4.0">CC BY-ND 4.0</option><option value="cc-by-nc-nd-4.0">CC BY-NC-ND 4.0</option><option value="cc0-1.0">CC0 1.0</option><option value="rights-reserved">All Rights Reserved</option></select></label>
-        </div>
-      </div>
-
-      <div class="wizard-result">
-        <div><p class="step-label">RECOMMENDATION</p><h3 id="recommendationTitle">MIT License</h3><p id="recommendationReason">シンプルで自由度の高いソフトウェアライセンスです。</p></div>
-        <button id="applyRecommendation" class="apply-button" type="button">この構成を使う</button>
-      </div>
-    </section>
-
-    <main class="layout">
-      <section class="panel controls-panel" aria-labelledby="settings-title">
-        <div class="section-heading"><div><p class="step-label">SETTINGS</p><h2 id="settings-title">基本情報</h2></div><span class="mini-note">ブラウザ内で処理</span></div>
-        <div class="form-grid">
-          <label id="manualLicenseField" class="field field-wide" hidden><span>ライセンス</span><select id="licenseSelect" autocomplete="off"></select></label>
-          <label class="field field-wide"><span>作品 / プロジェクト名</span><input id="projectName" type="text" placeholder="例: My Project"></label>
-          <label class="field field-wide"><span>著作者 / 組織名</span><input id="ownerName" type="text" placeholder="例: Fugu0141" autocomplete="name"></label>
-          <label class="field"><span>年</span><input id="copyrightYear" type="number" min="1900" max="9999" inputmode="numeric"></label>
-        </div>
-        <div class="notice"><strong id="noticeTitle">標準ライセンスを勝手に改変しません。</strong><span id="noticeText">ソフトウェア向け標準ライセンスは公式本文を利用し、Creative Commonsは適用通知と公式ライセンスへのリンクを生成します。</span></div>
-        <div class="divider"></div>
-        <div class="section-heading compact-heading"><div><p class="step-label">EXPORT</p><h2>エクスポート</h2></div></div>
-        <div class="export-grid">
-          <button class="export-button primary" type="button" data-export="license"><span class="export-icon">L</span><span><strong>LICENSE</strong><small>拡張子なし</small></span></button>
-          <button class="export-button" type="button" data-export="txt"><span class="export-icon">T</span><span><strong>TXT</strong><small>プレーンテキスト</small></span></button>
-          <button class="export-button" type="button" data-export="pdf"><span class="export-icon">P</span><span><strong>PDF</strong><small>共有・閲覧向け</small></span></button>
-          <button class="export-button" type="button" data-export="docx"><span class="export-icon">W</span><span><strong>DOCX</strong><small>Microsoft Word形式</small></span></button>
-        </div>
-        <button id="copyButton" class="copy-button" type="button">全文をクリップボードへコピー</button>
-        <p id="statusMessage" class="status-message" role="status" aria-live="polite"></p>
-      </section>
-
-      <section class="preview-column" aria-labelledby="preview-title">
-        <article class="panel summary-panel">
-          <div class="section-heading"><div><p class="step-label">SUMMARY</p><h2 id="licenseName">読み込み中…</h2></div><a id="sourceLink" class="source-link" href="#" target="_blank" rel="noreferrer">公式情報 ↗</a></div>
-          <p id="licenseDescription" class="license-description"></p>
-          <div id="scopeBanner" class="scope-banner" hidden></div>
-          <div class="summary-grid">
-            <section class="summary-group permission-group"><h3><span>✓</span> 許可</h3><div id="permissionsList" class="chip-list"></div></section>
-            <section class="summary-group condition-group"><h3><span>!</span> 条件</h3><div id="conditionsList" class="chip-list"></div></section>
-            <section class="summary-group limitation-group"><h3><span>×</span> 制限・注意</h3><div id="limitationsList" class="chip-list"></div></section>
-          </div>
-        </article>
-        <article class="panel text-panel">
-          <div class="text-panel-header"><div><p class="step-label">EXPORT PREVIEW</p><h2 id="preview-title">出力される文書</h2></div><span id="spdxBadge" class="spdx-badge">SPDX</span></div>
-          <div class="license-scroll"><pre id="licensePreview">ライセンス情報を準備しています…</pre></div>
-        </article>
       </section>
     </main>
-
-    <footer class="site-footer"><p>License Creator · GitHub License API + Creative Commons compatible notices.</p><p>選択支援ツールであり、法的助言ではありません。第三者の権利を含む作品では権利関係を確認してください。</p></footer>
   </div>
 
-  <script src="https://unpkg.com/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
-  <script src="https://unpkg.com/docx@9.7.1/dist/index.iife.js"></script>
+  <template id="clauseTemplate">
+    <div class="clause-item">
+      <div class="clause-drag" aria-hidden="true">⋮⋮</div>
+      <div class="clause-fields"><input class="clause-title" type="text" placeholder="条項タイトル"><textarea class="clause-body" rows="3" placeholder="内容"></textarea></div>
+      <button class="clause-remove" type="button" aria-label="条項を削除">×</button>
+    </div>
+  </template>
+
+  <script src="presets.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
   <script src="app.js" defer></script>
 </body>
 </html>
