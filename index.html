@@ -29,13 +29,17 @@
   <meta name="twitter:image:alt" content="License Creator — 見れば分かる、作品のルール。">
 
   <title>License Creator</title>
-  <link rel="stylesheet" href="style.css?v=20260815-0827">
+  <link rel="stylesheet" href="style.css?v=20260815-1929">
   <link rel="stylesheet" href="download-cta.css?v=20260815-0827">
 </head>
 <body>
   <header class="topbar">
     <a class="brand" href="#"><span class="brand-mark">L</span><span><strong>License Creator</strong><small>Visual license PDF builder</small></span></a>
-    <span id="saveStatus">自動保存</span>
+    <label class="autosave-control" for="autosaveToggle" title="ONにすると、このブラウザに入力内容を保存します">
+      <span class="autosave-copy"><strong>自動保存</strong><small id="saveStatus">OFF</small></span>
+      <input id="autosaveToggle" type="checkbox" role="switch" aria-label="自動保存">
+      <span class="autosave-switch" aria-hidden="true"></span>
+    </label>
   </header>
 
   <main class="layout">
@@ -129,8 +133,9 @@
   </main>
 
   <script src="presets.js?v=20260815-0827"></script>
+  <script src="local-date.js?v=20260815-1935"></script>
   <script src="https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js"></script>
-  <script src="app.js?v=20260815-0827" defer></script>
+  <script src="app.js?v=20260815-1929" defer></script>
   <script src="enhancements.js?v=20260815-0827" defer></script>
   <script src="cc-official.js?v=20260815-0827" defer></script>
   <script src="design-v2.js?v=20260815-0827" defer></script>
