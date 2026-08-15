@@ -77,12 +77,12 @@ const MODE_STATUS_LABELS = {
   },
   cc: {
     allow: { title:'利用できます', subtitle:'PERMITTED' },
-    ask: { title:'条件あり', subtitle:'CONDITIONS' },
+    ask: { title:'条件', subtitle:'CONDITIONS' },
     deny: { title:'ライセンス外', subtitle:'OUTSIDE LICENSE' }
   },
   software: {
     allow: { title:'利用できます', subtitle:'PERMITTED' },
-    ask: { title:'条件あり', subtitle:'REQUIREMENTS' },
+    ask: { title:'条件', subtitle:'REQUIREMENTS' },
     deny: { title:'制限あり', subtitle:'RESTRICTIONS' }
   }
 };
