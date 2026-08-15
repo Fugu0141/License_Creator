@@ -67,8 +67,9 @@ function installLicenseSelectHandlers(){
   });
 }
 
-// The internal allow / ask / deny keys are kept for backwards compatibility
-// with saved state and presets. Their visible meaning changes by license mode.
+// Keep the primary status vocabulary consistent across all modes. The middle
+// column differs because custom terms can genuinely require prior consultation,
+// while CC/OSS entries describe license conditions that must be followed.
 const MODE_STATUS_LABELS = {
   custom: {
     allow: { title:'許可', subtitle:'ALLOWED' },
@@ -76,14 +77,14 @@ const MODE_STATUS_LABELS = {
     deny: { title:'禁止', subtitle:'NOT ALLOWED' }
   },
   cc: {
-    allow: { title:'利用できます', subtitle:'PERMITTED' },
+    allow: { title:'許可', subtitle:'ALLOWED' },
     ask: { title:'条件', subtitle:'CONDITIONS' },
-    deny: { title:'ライセンス外', subtitle:'OUTSIDE LICENSE' }
+    deny: { title:'禁止', subtitle:'NOT ALLOWED' }
   },
   software: {
-    allow: { title:'利用できます', subtitle:'PERMITTED' },
-    ask: { title:'条件', subtitle:'REQUIREMENTS' },
-    deny: { title:'制限あり', subtitle:'RESTRICTIONS' }
+    allow: { title:'許可', subtitle:'ALLOWED' },
+    ask: { title:'条件', subtitle:'CONDITIONS' },
+    deny: { title:'禁止', subtitle:'NOT ALLOWED' }
   }
 };
 
@@ -144,22 +145,10 @@ drawPanel = function(ctx,x,y,w,h,key,items,theme){
   });
 };
 
-// In the CC selector card, "禁止" sounded like an absolute creator-level
-// prohibition. These entries are simply outside the permissions of that CC
-// license, so describe them that way instead.
-const baseRenderResultsWithModeLabels=renderResults;
-renderResults=function(){
-  baseRenderResultsWithModeLabels();
-  if(state.mode!=='cc' || !el.ccResult) return;
-  el.ccResult.querySelectorAll('p').forEach(node=>{
-    node.textContent=node.textContent.replace('禁止:', 'ライセンス外:');
-  });
-};
-
 function updateGeneralIntroCopy(){
   const intro=document.querySelector('.intro p:not(.eyebrow)');
   if(!intro) return;
-  intro.innerHTML='長い説明は減らして、<b>できること・必要な条件・できないこと</b>を一目で伝えるPDFにします。';
+  intro.innerHTML='長い説明は減らして、<b>許可・条件 / 要相談・禁止</b>を一目で伝えるPDFにします。';
 }
 
 document.addEventListener('DOMContentLoaded',()=>{
