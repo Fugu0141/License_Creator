@@ -3,6 +3,7 @@
 const DATA = window.LICENSE_DATA;
 const DEFAULT_ILLUSTRATION = '';
 const STORAGE_KEY = 'license-studio-simple-v1';
+const AUTOSAVE_PREF_KEY = 'license-studio-autosave-enabled-v1';
 const W = 1240;
 const H = 1754;
 const STATUS = { allow: '許可', ask: '要相談', deny: '禁止' };
@@ -21,11 +22,12 @@ const THEMES = {
 let state = structuredClone(DATA.defaultState);
 let illustration = null;
 let renderQueued = false;
+let autoSaveEnabled = false;
 const $ = (s) => document.querySelector(s);
 const $$ = (s) => Array.from(document.querySelectorAll(s));
 
 const el = {
-  saveStatus: $('#saveStatus'), title: $('#titleInput'), creator: $('#creatorInput'), workName: $('#workNameInput'), workType: $('#workTypeSelect'), updatedAt: $('#updatedAtInput'), contact: $('#contactInput'),
+  autosave: $('#autosaveToggle'), saveStatus: $('#saveStatus'), title: $('#titleInput'), creator: $('#creatorInput'), workName: $('#workNameInput'), workType: $('#workTypeSelect'), updatedAt: $('#updatedAtInput'), contact: $('#contactInput'),
   customSection: $('#customSection'), ccSection: $('#ccSection'), softwareSection: $('#softwareSection'), preset: $('#presetSelect'), matrix: $('#policyMatrix'), creditText: $('#creditTextInput'), notes: $('#notesInput'),
   adult: $('#restrictionAdult'), political: $('#restrictionPolitical'), ai: $('#restrictionAi'), nft: $('#restrictionNft'), harmful: $('#restrictionHarmful'), impersonation: $('#restrictionImpersonation'),
   ccLicense: $('#ccLicenseSelect'), ccResult: $('#ccResultCard'), softwareLicense: $('#softwareLicenseSelect'), softwareResult: $('#softwareResultCard'), softwareScope: $('#softwareScopeInput'),
@@ -33,17 +35,29 @@ const el = {
 };
 
 async function init(){
+  initAutoSavePreference();
   loadState();
   if(!state.updatedAt) state.updatedAt = new Date().toISOString().slice(0,10);
   populate();
   buildPolicies();
   bind();
   syncControls();
+  syncAutoSaveControl();
   await loadIllustration();
   renderAll();
 }
 
+function initAutoSavePreference(){
+  try{
+    autoSaveEnabled = localStorage.getItem(AUTOSAVE_PREF_KEY) === '1';
+    if(!autoSaveEnabled) localStorage.removeItem(STORAGE_KEY);
+  }catch(err){
+    autoSaveEnabled = false;
+    console.warn(err);
+  }
+}
 function loadState(){
+  if(!autoSaveEnabled) return;
   try{
     const saved = JSON.parse(localStorage.getItem(STORAGE_KEY) || 'null');
     if(saved && typeof saved === 'object'){
@@ -53,8 +67,39 @@ function loadState(){
     }
   }catch(err){ console.warn(err); }
 }
+function syncAutoSaveControl(){
+  if(el.autosave) el.autosave.checked = autoSaveEnabled;
+  if(el.saveStatus) el.saveStatus.textContent = autoSaveEnabled ? 'ON' : 'OFF';
+}
+function setAutoSaveEnabled(enabled){
+  autoSaveEnabled = Boolean(enabled);
+  try{
+    if(autoSaveEnabled){
+      localStorage.setItem(AUTOSAVE_PREF_KEY,'1');
+      localStorage.setItem(STORAGE_KEY,JSON.stringify(state));
+    }else{
+      localStorage.removeItem(AUTOSAVE_PREF_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    }
+  }catch(err){
+    console.warn(err);
+    autoSaveEnabled = false;
+    try{
+      localStorage.removeItem(AUTOSAVE_PREF_KEY);
+      localStorage.removeItem(STORAGE_KEY);
+    }catch(cleanupErr){ console.warn(cleanupErr); }
+  }
+  syncAutoSaveControl();
+}
 function saveState(){
-  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); el.saveStatus.textContent='保存済み'; setTimeout(()=>el.saveStatus.textContent='自動保存',900); }catch(err){ console.warn(err); }
+  if(!autoSaveEnabled) return;
+  try{
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    if(el.saveStatus){
+      el.saveStatus.textContent='保存済み';
+      setTimeout(()=>{ if(autoSaveEnabled && el.saveStatus) el.saveStatus.textContent='ON'; },900);
+    }
+  }catch(err){ console.warn(err); }
 }
 function populate(){
   el.workType.innerHTML = Object.entries(DATA.workTypes).map(([k,v])=>`<option value="${k}">${v}</option>`).join('');
@@ -70,6 +115,7 @@ function bind(){
   bindInput(el.title,'title'); bindInput(el.creator,'creator'); bindInput(el.workName,'workName'); bindInput(el.workType,'workType','change'); bindInput(el.updatedAt,'updatedAt','change'); bindInput(el.contact,'contact');
   bindInput(el.creditText,'creditText'); bindInput(el.notes,'notes'); bindInput(el.theme,'theme','change'); bindInput(el.accent,'accent','input'); bindInput(el.softwareScope,'softwareScope');
   bindCheck(el.adult,'adult'); bindCheck(el.political,'political'); bindCheck(el.nft,'nft'); bindCheck(el.harmful,'harmful'); bindCheck(el.impersonation,'impersonation');
+  if(el.autosave) el.autosave.addEventListener('change',()=>setAutoSaveEnabled(el.autosave.checked));
   el.preset.addEventListener('change',()=>{ const p=DATA.presets[el.preset.value]; state.preset=el.preset.value; state.policies={...p.policies}; state.credit=p.credit; state.restrictions={...p.restrictions}; syncControls(); changed(); });
   el.matrix.addEventListener('click',e=>{ const b=e.target.closest('button[data-value]'); if(!b)return; const row=b.closest('[data-policy]'); state.policies[row.dataset.policy]=b.dataset.value; changed(); });
   document.querySelector('[data-segment="credit"]').addEventListener('click',e=>{ const b=e.target.closest('button[data-value]'); if(!b)return; state.credit=b.dataset.value; changed(); });
