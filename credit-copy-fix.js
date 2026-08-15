@@ -19,9 +19,14 @@ function normalizeCreditExample(value){
     .trim();
 }
 
+function isCcZero(){
+  return state.mode === 'cc' && state.ccLicense === 'CC0 1.0';
+}
+
 function ccCreditExamplePlaceholder(){
   const license=String(state.ccLicense || 'CC BY 4.0');
-  return `例: 「作品名」by 作者名 / ${license} / 配布元URL`;
+  const prefix=isCcZero() ? '任意で表記する場合の例' : '例';
+  return `${prefix}: 「作品名」by 作者名 / ${license} / 配布元URL`;
 }
 
 function syncCcCreditExampleEditor(){
@@ -81,9 +86,10 @@ creditStripContent = function(){
   if(state.mode === 'cc'){
     const base=baseCreditStripContent();
     const enteredExample=normalizeCreditExample(state.ccCreditText);
+    const detailPrefix=isCcZero() ? '任意で表記する場合の例' : '例';
     return {
       headline:base.headline,
-      detail:enteredExample ? `例: ${enteredExample}` : ''
+      detail:enteredExample ? `${detailPrefix}: ${enteredExample}` : ''
     };
   }
 
