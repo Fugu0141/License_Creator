@@ -86,10 +86,22 @@ creditStripContent = function(){
   if(state.mode === 'cc'){
     const base=baseCreditStripContent();
     const enteredExample=normalizeCreditExample(state.ccCreditText);
-    const detailPrefix=isCcZero() ? '任意で表記する場合の例' : '例';
+
+    // Match custom-mode behavior for attribution-required CC licenses: when
+    // the author leaves the example blank, derive a neutral example from the
+    // year, creator and work name. CC0 remains special because attribution is
+    // not required and should not gain an automatic example by itself.
+    if(isCcZero()){
+      return {
+        headline:base.headline,
+        detail:enteredExample ? `任意で表記する場合の例: ${enteredExample}` : ''
+      };
+    }
+
+    const example=enteredExample || automaticCreditExample();
     return {
       headline:base.headline,
-      detail:enteredExample ? `${detailPrefix}: ${enteredExample}` : ''
+      detail:`例: ${example}`
     };
   }
 
