@@ -245,6 +245,11 @@
   function syncLateUi(){
     syncLanguageAria();
     syncPublicPlaceholders();
+    // Keep the language control universally recognizable even when the current
+    // UI language itself is unfamiliar to the user. The globe icon is supplied
+    // by i18n.css; the visible label deliberately stays in common English.
+    const languageLabel=document.querySelector('#uiLanguageLabel');
+    if(languageLabel) languageLabel.textContent='Language';
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
