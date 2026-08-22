@@ -32,7 +32,7 @@
   <link rel="stylesheet" href="style.css?v=20260815-1929">
   <link rel="stylesheet" href="download-cta.css?v=20260815-0827">
   <link rel="stylesheet" href="autosave-toggle.css?v=20260822-1511">
-  <link rel="stylesheet" href="i18n.css?v=20260822-1511">
+  <link rel="stylesheet" href="i18n.css?v=20260822-1521">
 </head>
 <body>
   <header class="topbar">
@@ -132,6 +132,10 @@
           <label class="field wide"><span>右上のイラスト（任意）</span><input id="imageInput" type="file" accept="image/png,image/jpeg,image/webp"></label>
         </div>
         <div class="image-actions"><span id="imageLabel">画像なし</span><button id="resetImageButton" type="button">画像を外す</button></div>
+      </section>
+
+      <section id="exportCard" class="card export-card">
+        <div class="card-head"><span>4</span><div><strong id="exportCardTitle">書き出し</strong><small id="exportCardSubtitle">PDFの言語を選んで保存します</small></div></div>
         <div class="download-area">
           <label class="export-language-field" for="pdfLanguageSelect">
             <span id="pdfLanguageLabel">PDFの言語</span>
@@ -176,6 +180,6 @@
   <script src="editor-restore-fix.js?v=20260815-0827" defer></script>
   <script src="cc-note-append.js?v=20260815-2007" defer></script>
   <script src="i18n.js?v=20260822-1449" defer></script>
-  <script src="i18n-final.js?v=20260822-1511" defer></script>
+  <script src="i18n-final.js?v=20260822-1521" defer></script>
 </body>
 </html>
