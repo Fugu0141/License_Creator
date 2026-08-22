@@ -1,0 +1,27 @@
+.intro.intro-compact{
+  min-height:38px;
+  padding:4px 2px 0;
+  display:flex;
+  align-items:flex-start;
+}
+
+.intro.intro-compact p{
+  margin:0;
+  color:var(--muted);
+  font-size:.92rem;
+  line-height:1.7;
+}
+
+/* The editor uses a 12px grid gap before the mode tabs. Keeping this intro
+   about 12px shorter than the preview header makes the tabs and preview sheet
+   begin on the same visual row on the two-column desktop layout. */
+.preview-head{
+  min-height:50px;
+}
+
+@media(max-width:1000px){
+  .intro.intro-compact{
+    min-height:auto;
+    padding-top:2px;
+  }
+}
