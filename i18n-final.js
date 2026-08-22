@@ -28,6 +28,13 @@
     ko:{adult:'성인용 이용',political:'정치 / 종교 이용',nft:'NFT / 암호자산 이용',harmful:'불법 / 비방 / 유해 이용',impersonation:'공식 사칭 이용'}
   };
 
+  const UI_PLACEHOLDERS = {
+    ja:{creator:'例: 作者名 / サークル名',work:'例: 作品名',credit:'例: © 2026 作者名 / 作品名',notes:'必要に応じて、利用時の補足や注意事項を入力'},
+    en:{creator:'Example: Creator / circle name',work:'Example: Work title',credit:'Example: © 2026 Creator / Work title',notes:'Add any usage notes or cautions if needed'},
+    'zh-CN':{creator:'例如：作者名 / 社团名',work:'例如：作品名称',credit:'例如：© 2026 作者名 / 作品名称',notes:'可根据需要填写使用补充说明或注意事项'},
+    ko:{creator:'예: 제작자명 / 서클명',work:'예: 작품명',credit:'예: © 2026 제작자명 / 작품명',notes:'필요한 경우 이용 관련 보충 설명이나 주의 사항을 입력'}
+  };
+
   function supportedLanguage(value){
     return ['ja','en','zh-CN','ko'].includes(value) ? value : 'ja';
   }
@@ -109,6 +116,93 @@
       .map(([,label])=>label);
   };
 
+  // Restore the content-sized panel behavior from custom-panel-auto.js for all
+  // modes, while keeping the vertical balance shift introduced later.
+  drawStatusPanels=function(ctx,theme){
+    const groups=getGroups();
+    const shift=typeof PDF_CONTENT_SHIFT_Y==='number' ? PDF_CONTENT_SHIFT_Y : 36;
+    const y=468+shift,w=349,gap=18;
+    const maxItems=Math.max(1,groups.allow.length,groups.ask.length,groups.deny.length);
+    const calculated=126+maxItems*66+28;
+    let h;
+    if(state.mode==='custom') h=Math.max(270,Math.min(620,calculated));
+    else if(state.mode==='cc') h=Math.max(270,Math.min(390,calculated));
+    else h=Math.max(285,Math.min(430,calculated));
+    ['allow','ask','deny'].forEach((key,i)=>drawPanel(ctx,78+i*(w+gap),y,w,h,key,groups[key],theme));
+    return {y,height:h,bottom:y+h};
+  };
+
+  // Keep header-polish.js' long-title safety while localizing only system text.
+  titleBreakCandidates=function(text){
+    const value=String(text||'');
+    const candidates=new Map();
+    try{
+      if(typeof Intl!=='undefined' && Intl.Segmenter){
+        const segs=Array.from(new Intl.Segmenter(currentPdfLanguage(),{granularity:'word'}).segment(value));
+        let pos=0;
+        segs.forEach(seg=>{
+          pos+=seg.segment.length;
+          if(pos>0 && pos<value.length) candidates.set(pos,0);
+        });
+      }
+    }catch(err){ /* character fallback below */ }
+    for(let i=1;i<value.length;i++){
+      const prev=value[i-1];
+      if(/\s/.test(prev) || /[・／/｜|:：―—–-]/.test(prev)) candidates.set(i,Math.min(candidates.get(i)??Infinity,0));
+      else if(/[、。，．,.!?！？]/.test(prev)) candidates.set(i,Math.min(candidates.get(i)??Infinity,4));
+    }
+    for(let i=1;i<value.length;i++) if(!candidates.has(i)) candidates.set(i,18);
+    return [...candidates.entries()].map(([index,penalty])=>({index,penalty}));
+  };
+
+  drawHeader=function(ctx,theme){
+    const left=78;
+    const titleMaxWidth=810;
+    const shift=typeof PDF_CONTENT_SHIFT_Y==='number' ? PDF_CONTENT_SHIFT_Y : 36;
+
+    ctx.fillStyle=theme.muted;
+    ctx.font=weight(700,15);
+    ctx.letterSpacing='1px';
+    ctx.fillText(window.licensePdfT?.('pdf.kicker') || 'LICENSE / TERMS OF USE',left,78+shift);
+    ctx.letterSpacing='0px';
+
+    const rawTitle=(state.titleCustomized && String(state.title || '').trim())
+      ? String(state.title).trim()
+      : (window.licensePdfT?.('pdf.defaultTitle') || '作品利用ガイド');
+    const title=fitHeaderTitle(ctx,rawTitle,titleMaxWidth);
+    const titleTop=116+shift;
+    ctx.fillStyle=theme.ink;
+    ctx.font=weight(800,title.size);
+    ctx.textBaseline='top';
+    title.lines.forEach((line,i)=>ctx.fillText(line,left,titleTop+i*title.lineHeight));
+    ctx.textBaseline='alphabetic';
+
+    const titleBottom=titleTop+title.lines.length*title.lineHeight;
+    const descriptionY=Math.max(207+shift,titleBottom+23);
+    const work=String(state.workName || '').trim() || (window.licensePdfT?.('pdf.thisWork') || 'この作品');
+    const description=window.licensePdfT?.('pdf.description',{work}) || work;
+    ctx.fillStyle=theme.muted;
+    let drawn=false;
+    for(let size=20;size>=16.5;size-=.5){
+      ctx.font=weight(500,size);
+      if(ctx.measureText(description).width<=titleMaxWidth){
+        ctx.fillText(description,left,descriptionY);
+        drawn=true;
+        break;
+      }
+    }
+    if(!drawn){
+      ctx.font=weight(500,18.5);
+      drawBalancedText(ctx,description,left,descriptionY,titleMaxWidth,29,2);
+    }
+
+    if(illustration){
+      const x=958,y=61+shift,w=202,h=202;
+      ctx.save(); roundedPath(ctx,x,y,w,h,12); ctx.clip(); drawImageCover(ctx,illustration,x,y,w,h); ctx.restore();
+      strokeRound(ctx,x,y,w,h,12,theme.lineStrong,1);
+    }
+  };
+
   // License IDs such as Apache-2.0 contain periods, so they must be looked up
   // as literal object keys rather than as dotted translation paths.
   const baseRenderResultsWithLiteralLicenseIds=renderResults;
@@ -136,9 +230,26 @@
     if(autosave) autosave.setAttribute('aria-label',window.licenseT?.('ui.autosave') || 'Autosave');
   }
 
-  document.addEventListener('DOMContentLoaded',()=>{
+  function syncPublicPlaceholders(){
+    const placeholders=UI_PLACEHOLDERS[currentUiLanguage()] || UI_PLACEHOLDERS.ja;
+    const creator=document.querySelector('#creatorInput');
+    const work=document.querySelector('#workNameInput');
+    const credit=document.querySelector('#creditTextInput');
+    const notes=document.querySelector('#notesInput');
+    if(creator) creator.placeholder=placeholders.creator;
+    if(work) work.placeholder=placeholders.work;
+    if(credit) credit.placeholder=placeholders.credit;
+    if(notes) notes.placeholder=placeholders.notes;
+  }
+
+  function syncLateUi(){
     syncLanguageAria();
-    document.querySelector('#uiLanguageSelect')?.addEventListener('change',syncLanguageAria);
+    syncPublicPlaceholders();
+  }
+
+  document.addEventListener('DOMContentLoaded',()=>{
+    syncLateUi();
+    document.querySelector('#uiLanguageSelect')?.addEventListener('change',syncLateUi);
     renderResults();
     queueRender();
   });
