@@ -7,9 +7,19 @@
     'zh-CN':{title:'导出',subtitle:'选择 PDF 语言并保存文件',about:'关于本工具'},
     ko:{title:'내보내기',subtitle:'PDF 언어를 선택하고 파일을 저장합니다',about:'이 도구에 대해'}
   };
+  const SUPPORTED=['ja','en','zh-CN','ko'];
 
   function language(){
-    return ['ja','en','zh-CN','ko'].includes(state?.uiLanguage) ? state.uiLanguage : 'ja';
+    return SUPPORTED.includes(state?.uiLanguage) ? state.uiLanguage : 'ja';
+  }
+
+  function applyRequestedLanguage(){
+    const requested=new URLSearchParams(location.search).get('lang');
+    if(!SUPPORTED.includes(requested)) return;
+    const select=document.querySelector('#uiLanguageSelect');
+    if(!select || select.value===requested) return;
+    select.value=requested;
+    select.dispatchEvent(new Event('change',{bubbles:true}));
   }
 
   function syncExportStepCopy(){
@@ -57,6 +67,7 @@
   }
 
   document.addEventListener('DOMContentLoaded',()=>{
+    applyRequestedLanguage();
     syncExportStepCopy();
     syncAboutLink();
     document.querySelector('#uiLanguageSelect')?.addEventListener('change',()=>{
